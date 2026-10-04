@@ -120,13 +120,14 @@ window.FB={
  refresh:async()=>{if(auth.currentUser)await window.FB.ready(auth.currentUser)},
  getConfig:async()=>{const s=await getDoc(doc(fs,"config","app"));return s.exists()?s.data():{}},
  get user(){return auth.currentUser},
+ setPending:(plan,amount)=>{me.pending=true;return setDoc(doc(fs,"pendientes",auth.currentUser.uid),{uid:auth.currentUser.uid,code:me.code,name:me.name,plan,amount,sentAt:serverTimestamp()})},
  sendMessage:text=>addDoc(collection(fs,"mensajes"),{uid:auth.currentUser.uid,code:me.code,name:me.name,email:me.email,text,createdAt:serverTimestamp(),status:"nuevo"}),
  myMessages:async()=>{const r=await getDocs(query(collection(fs,"mensajes"),where("uid","==",auth.currentUser.uid)));
   return r.docs.map(d=>{const x=d.data();return{id:d.id,text:x.text,status:x.status,reply:x.reply||"",t:x.createdAt&&x.createdAt.toMillis?x.createdAt.toMillis():Date.now()}}).sort((a,b)=>b.t-a.t)},
  ready:async u=>{const ref=doc(fs,"users",u.uid);let s=await getDoc(ref);
   if(!s.exists()){const nm=u.displayName||(u.email||"").split("@")[0],c=await newCode(nm);
    await setDoc(ref,{name:nm,email:u.email||"",code:c,createdAt:serverTimestamp()});s=await getDoc(ref)}
-  const d=s.data();["createdAt","paidUntil","exemptUntil"].forEach(k=>{if(d[k]&&d[k].toMillis)d[k]=d[k].toMillis()});me=d},
+  const d=s.data();["createdAt","paidUntil","exemptUntil"].forEach(k=>{if(d[k]&&d[k].toMillis)d[k]=d[k].toMillis()});try{d.pending=(await getDoc(doc(fs,"pendientes",u.uid))).exists()}catch(e){d.pending=false}me=d},
  loadData:async()=>{const s=await getDoc(doc(fs,"datos",auth.currentUser.uid));return s.exists()?s.data().json:null},
  saveData:j=>setDoc(doc(fs,"datos",auth.currentUser.uid),{json:j,updatedAt:serverTimestamp()})
 };
@@ -487,7 +488,9 @@ function mem(){const m=(window.FB&&FB.me)||{},n=Date.now(),c=m.createdAt||n,dl=x
 const locked=()=>mem().s==="locked";
 const dd=n=>n+(n===1?" día":" días");
 function memText(){const m=mem();return{exempt:"Membresía: exonerada",paid:"Membresía activa hasta "+(m.u?fmtd(m.u):""),trial:"Prueba gratis: "+(m.d?dd(m.d):"")+" restantes",grace:"Membresía vencida: te quedan "+(m.d?dd(m.d):""),locked:"Membresía vencida: modo solo lectura"}[m.s]}
-function banner(){const m=mem();let t,c;
+function pendBanner(){const m=(window.FB&&FB.me)||{};return m.pending&&["paid","exempt"].indexOf(mem().s)<0?`<div class="mb"><span>⏳ Comprobante enviado. Estamos verificando tu pago.</span></div>`:""}
+function banner(){return pendBanner()+mbanner()}
+function mbanner(){const m=mem();let t,c;
  if(m.s==="trial"){t="Prueba gratis: "+(m.d===1?"te queda 1 día":"te quedan "+m.d+" días");c=""}
  else if(m.s==="paid"&&m.d<=5){t="Tu membresía vence en "+dd(m.d);c="wn"}
  else if(m.s==="grace"){t="Membresía vencida. Te quedan "+dd(m.d)+" para renovar";c="er"}
@@ -512,15 +515,16 @@ function planStep1(){const p=PR(),sv=Math.round((1-p.y0/(12*p.m0))*100),
  document.querySelectorAll("input[name=pl]").forEach(i=>i.onchange=()=>{_plan=i.value;planStep1()});
  $("#pn").onclick=planStep2}
 function planStep2(){const c=_cfg||{},p=PR(),amt=_plan==="m"?p.m:p.y,me=FB.me||{},b=c.bank||{},nm=_plan==="m"?"mensual":"anual",w=String(c.whatsapp||"").replace(/\D/g,""),
- msg=encodeURIComponent("Hola, soy "+me.name+" ("+me.email+"). Mi código: "+me.code+". Pagué la Membresía RutaCobro, plan "+nm+", "+rdn(amt)+". Adjunto el comprobante."),
+ msg=encodeURIComponent("*Hola, soy "+me.name+".*\n\nMi código: *"+me.code+".*\n\nPagué la Membresía RutaCobro.\nPlan "+nm+", "+rdn(amt)+".\nAdjunto el comprobante."),
  row=(l,v)=>v?`<div class="bk"><div><div class="mt">${l}</div><b>${esc(v)}</b></div>${l==="Número de cuenta"?`<button class="btn g s" data-copy="${esc(v)}">Copiar</button>`:""}</div>`:"";
- openModal(`<h2>Transferencia</h2><p class="mt">Plan ${nm}: <b style="color:var(--tx)">${rdn(amt)}</b></p>${b.number&&w?`<p class="mt" style="margin:8px 0">El pago se realiza por transferencia. Hazla en tu banco o en la sucursal más cercana a esta cuenta:</p>${row("Banco",b.name)}${row("Titular",b.holder)}${row("Tipo de cuenta",b.type)}${row("Número de cuenta",b.number)}<p class="mt" style="margin:8px 0">Luego envía la foto del comprobante por WhatsApp.</p><div class="mf"><button class="btn g" id="pb">Atrás</button><a class="btn" href="https://wa.me/${w}?text=${msg}" target="_blank" rel="noopener">Enviar comprobante por WhatsApp</a></div>`:`<p style="margin:10px 0">Los datos de pago aún no están disponibles. Intenta más tarde.</p><div class="mf"><button class="btn g" id="pb">Atrás</button></div>`}`);
+ openModal(`<h2>Transferencia</h2><p class="mt">Plan ${nm}: <b style="color:var(--tx)">${rdn(amt)}</b></p>${b.number&&w?`<p class="mt" style="margin:8px 0">El pago se realiza por transferencia. Hazla en tu banco o en la sucursal más cercana a esta cuenta:</p>${row("Banco",b.name)}${row("Titular",b.holder)}${row("Tipo de cuenta",b.type)}${row("Número de cuenta",b.number)}<p class="mt" style="margin:8px 0">Luego envía la foto del comprobante por WhatsApp.</p><div class="mf"><button class="btn g" id="pb">Atrás</button><a class="btn" href="https://wa.me/${w}?text=${msg}" target="_blank" rel="noopener" id="pw">Enviar comprobante por WhatsApp</a></div>`:`<p style="margin:10px 0">Los datos de pago aún no están disponibles. Intenta más tarde.</p><div class="mf"><button class="btn g" id="pb">Atrás</button></div>`}`);
  $("#pb").onclick=planStep1;
+ const pw=$("#pw");if(pw)pw.onclick=()=>setTimeout(()=>{FB.setPending(_plan,amt).catch(()=>{});closeModal();view="hoy";window.scrollTo(0,0);render();toast("Comprobante enviado. Verificaremos tu pago.")},400);
  document.querySelectorAll("[data-copy]").forEach(x=>x.onclick=()=>{try{navigator.clipboard.writeText(x.dataset.copy).then(()=>toast("Copiado"))}catch(e){toast("No se pudo copiar")}})}
 async function supportFlow(){openModal('<p class="mt">Cargando…</p>');let ms=[];
  try{const r=await Promise.all([FB.getConfig(),FB.myMessages()]);_cfg=r[0];ms=r[1]}catch(e){}
  const w=String((_cfg||{}).whatsapp||"").replace(/\D/g,""),me=FB.me||{},SL={nuevo:"Enviado",leido:"Leído",resuelto:"Resuelto"},
- urg=w?`<a class="btn g" href="https://wa.me/${w}?text=${encodeURIComponent("URGENTE. Soy "+me.name+" ("+me.email+"), código "+me.code+". ")}" target="_blank" rel="noopener">Urgente: escribir por WhatsApp</a>`:"";
+ urg=w?`<a class="btn g" href="https://wa.me/${w}?text=${encodeURIComponent("*URGENTE.* Soy "+me.name+", código *"+me.code+".*\n\n")}" target="_blank" rel="noopener">Urgente: escribir por WhatsApp</a>`:"";
  openModal(`<h2>Soporte</h2><p class="mt">Cuéntanos tu queja, duda o sugerencia.</p><textarea id="sm" maxlength="1000" placeholder="Escribe tu mensaje"></textarea><div class="mf"><button class="btn g" data-close>Cerrar</button><button class="btn" id="ss">Enviar</button></div><div style="margin-top:8px">${urg}</div>${ms.length?`<h2 style="margin-top:16px">Tus mensajes</h2>${ms.map(m=>`<div class="sm"><div class="mt">${fmtd(m.t)} · ${SL[m.status]||"Enviado"}</div><div>${esc(m.text)}</div>${m.reply?`<div class="rp"><div class="mt">Respuesta de soporte</div>${esc(m.reply)}</div>`:""}</div>`).join("")}`:""}`);
  $("#ss").onclick=()=>{const t=$("#sm").value.trim();if(!t)return toast("Escribe tu mensaje");$("#ss").disabled=true;
   FB.sendMessage(t).then(()=>{toast("Mensaje enviado");supportFlow()}).catch(()=>{toast("No se pudo enviar. Intenta de nuevo");$("#ss").disabled=false})}}
