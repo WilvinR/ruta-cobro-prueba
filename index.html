@@ -93,7 +93,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th{color:var(--mt);font
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import{getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,getRedirectResult,signOut,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import{getFirestore,doc,getDoc,setDoc,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-const app=initializeApp({apiKey:"AIzaSyBIUEHtcuhPv3EmohKJtZ2FXsm6OsNQscY",authDomain:location.hostname,projectId:"rutacobrord",storageBucket:"rutacobrord.firebasestorage.app",messagingSenderId:"626570456246",appId:"1:626570456246:web:6931e4e3f320c15e378a17"});
+const app=initializeApp({apiKey:"AIzaSyBIUEHtcuhPv3EmohKJtZ2FXsm6OsNQscY",authDomain:"rutacobrord.firebaseapp.com",projectId:"rutacobrord",storageBucket:"rutacobrord.firebasestorage.app",messagingSenderId:"626570456246",appId:"1:626570456246:web:6931e4e3f320c15e378a17"});
 const auth=getAuth(app),fs=getFirestore(app);let me=null;
 function initials(n){const w=String(n||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^A-Za-z ]/g," ").trim().split(/\s+/).filter(Boolean);
  if(!w.length)return"XX";return(w.length>1?w[0][0]+w[1][0]:w[0].slice(0,2)).toUpperCase().padEnd(2,"X")}
@@ -104,7 +104,7 @@ async function newCode(name){const i=initials(name);
 window.FB={
  get me(){return me},
  onUser:cb=>onAuthStateChanged(auth,cb),
- signIn:()=>{const p=new GoogleAuthProvider();p.setCustomParameters({prompt:"select_account"});return signInWithRedirect(auth,p)},
+ signIn:()=>{const p=new GoogleAuthProvider();p.setCustomParameters({prompt:"select_account"});return signInWithPopup(auth,p).catch(e=>{if(e.code==="auth/popup-blocked")return signInWithRedirect(auth,p);throw e})},
  redirectResult:()=>getRedirectResult(auth),
  signOut:()=>signOut(auth),
  ready:async u=>{const ref=doc(fs,"users",u.uid);let s=await getDoc(ref);
