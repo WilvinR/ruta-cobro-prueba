@@ -91,9 +91,9 @@ table{width:100%;border-collapse:collapse;font-size:13px}th{color:var(--mt);font
 <input type="file" id="file" accept=".json,application/json" hidden>
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import{getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,signOut,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import{getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,getRedirectResult,signOut,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import{getFirestore,doc,getDoc,setDoc,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-const app=initializeApp({apiKey:"AIzaSyBIUEHtcuhPv3EmohKJtZ2FXsm6OsNQscY",authDomain:"rutacobrord.firebaseapp.com",projectId:"rutacobrord",storageBucket:"rutacobrord.firebasestorage.app",messagingSenderId:"626570456246",appId:"1:626570456246:web:6931e4e3f320c15e378a17"});
+const app=initializeApp({apiKey:"AIzaSyBIUEHtcuhPv3EmohKJtZ2FXsm6OsNQscY",authDomain:location.hostname,projectId:"rutacobrord",storageBucket:"rutacobrord.firebasestorage.app",messagingSenderId:"626570456246",appId:"1:626570456246:web:6931e4e3f320c15e378a17"});
 const auth=getAuth(app),fs=getFirestore(app);let me=null;
 function initials(n){const w=String(n||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^A-Za-z ]/g," ").trim().split(/\s+/).filter(Boolean);
  if(!w.length)return"XX";return(w.length>1?w[0][0]+w[1][0]:w[0].slice(0,2)).toUpperCase().padEnd(2,"X")}
@@ -104,8 +104,8 @@ async function newCode(name){const i=initials(name);
 window.FB={
  get me(){return me},
  onUser:cb=>onAuthStateChanged(auth,cb),
- signIn:()=>{const p=new GoogleAuthProvider();p.setCustomParameters({prompt:"select_account"});
-  return signInWithPopup(auth,p).catch(e=>{if(e.code==="auth/popup-blocked")return signInWithRedirect(auth,p);throw e})},
+ signIn:()=>{const p=new GoogleAuthProvider();p.setCustomParameters({prompt:"select_account"});return signInWithRedirect(auth,p)},
+ redirectResult:()=>getRedirectResult(auth),
  signOut:()=>signOut(auth),
  ready:async u=>{const ref=doc(fs,"users",u.uid);let s=await getDoc(ref);
   if(!s.exists()){const nm=u.displayName||(u.email||"").split("@")[0],c=await newCode(nm);
@@ -492,11 +492,11 @@ function loginScreen(msg){document.body.classList.add("lg");$("#nav").innerHTML=
 ${msg?`<div class="er">${esc(msg)}</div>`:""}
 <p class="fine">Entra con tu cuenta de Google, sin contraseñas nuevas.<br>Tu cartera es privada: solo tú la ves.</p></div>`;
  $("#gl").onclick=()=>FB.signIn().catch(e=>{if(e.code!=="auth/popup-closed-by-user"&&e.code!=="auth/cancelled-popup-request")loginScreen("No se pudo iniciar sesión. Intenta de nuevo.")})}
-function startAuth(){FB.onUser(async u=>{
- if(!u){db=empty();view="hoy";return loginScreen()}
+let _lerr="";function startAuth(){FB.redirectResult().catch(e=>{_lerr="No se pudo iniciar sesión ("+(e.code||"error")+")"}).finally(()=>FB.onUser(async u=>{
+ if(!u){db=empty();view="hoy";return loginScreen(_lerr)}
  document.body.classList.remove("lg"); $("#nav").innerHTML="";$("#app").innerHTML='<p class="mt" style="padding:20px">Cargando tus datos…</p>';
  try{await FB.ready(u);const raw=await FB.loadData();let d=null;try{d=raw?JSON.parse(raw):null}catch(x){}
-  db=valid(d)?norm(d):empty();render()}catch(e){loginScreen("No se pudieron cargar tus datos. Revisa tu conexión.")}})}
+  db=valid(d)?norm(d):empty();render()}catch(e){loginScreen("No se pudieron cargar tus datos. Revisa tu conexión.")}}))}
 $("#brand").innerHTML=logo();
 if(location.protocol==="file:"){$("#app").innerHTML='<div class="card"><h2>Abre el enlace de la app</h2><p class="mt">Este archivo no funciona abierto desde Descargas. Súbelo a GitHub y abre tu enlace de Vercel.</p></div>'}else{pwa();$("#app").innerHTML='<p class="mt" style="padding:20px">Cargando…</p>';
 if(window.FB)startAuth();else{window.addEventListener("fb-ready",startAuth,{once:true});
