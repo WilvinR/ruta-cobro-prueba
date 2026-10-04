@@ -61,6 +61,16 @@ table{width:100%;border-collapse:collapse;font-size:13px}th{color:var(--mt);font
 .live span{color:var(--mt)}
 .acts{display:flex;gap:8px;flex-wrap:wrap}
 
+
+.mb{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--bl);background:#0b1730;border-radius:14px;padding:10px 12px;margin-bottom:12px;font-size:14.5px}
+.mb.wn{border-color:var(--wn);background:#241a08}.mb.er{border-color:var(--er);background:#2a1214}
+a.btn{display:inline-block;text-decoration:none;text-align:center}
+.pl{display:flex;align-items:center;gap:12px;border:1px solid var(--bd);border-radius:14px;padding:12px;margin-bottom:10px;cursor:pointer}
+.pl.on{border-color:var(--bl);background:#0b1730}.pl>div:nth-child(2){flex:1}.pl input{accent-color:#2f7bff;width:18px;height:18px}
+.bk{background:var(--p2);border:1px solid var(--bd);border-radius:12px;padding:10px 12px;margin:8px 0;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.ro [data-a="nuevoCliente"],.ro [data-a="cobrar"]{display:none}
+textarea{width:100%;background:var(--p2);color:var(--tx);border:1px solid var(--bd);border-radius:12px;padding:11px 12px;font:inherit;min-height:90px;margin:8px 0;resize:vertical}
+.sm{border:1px solid var(--bd);border-radius:12px;padding:10px 12px;margin:8px 0;background:var(--p2)}.sm .rp{border-left:3px solid var(--bl);padding-left:10px;margin-top:8px}
 .lg header{display:none}
 .lgn{min-height:100svh;display:flex;flex-direction:column;justify-content:center;gap:26px;padding:28px 2px 24px;max-width:460px;margin:0 auto}
 .lgn .lb{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.14em;font-size:13px;color:var(--ce)}
@@ -92,7 +102,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th{color:var(--mt);font
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import{getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,getRedirectResult,signOut,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import{getFirestore,doc,getDoc,setDoc,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import{getFirestore,collection,addDoc,query,where,getDocs,doc,getDoc,setDoc,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const app=initializeApp({apiKey:"AIzaSyBIUEHtcuhPv3EmohKJtZ2FXsm6OsNQscY",authDomain:"rutacobrord.firebaseapp.com",projectId:"rutacobrord",storageBucket:"rutacobrord.firebasestorage.app",messagingSenderId:"626570456246",appId:"1:626570456246:web:6931e4e3f320c15e378a17"});
 const auth=getAuth(app),fs=getFirestore(app);let me=null;
 function initials(n){const w=String(n||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^A-Za-z ]/g," ").trim().split(/\s+/).filter(Boolean);
@@ -106,11 +116,17 @@ window.FB={
  onUser:cb=>onAuthStateChanged(auth,cb),
  signIn:()=>{const p=new GoogleAuthProvider();p.setCustomParameters({prompt:"select_account"});return signInWithPopup(auth,p).catch(e=>{if(e.code==="auth/popup-blocked")return signInWithRedirect(auth,p);throw e})},
  redirectResult:()=>getRedirectResult(auth),
- signOut:()=>signOut(auth),
+ signOut:()=>{me=null;return signOut(auth)},
+ refresh:async()=>{if(auth.currentUser)await window.FB.ready(auth.currentUser)},
+ getConfig:async()=>{const s=await getDoc(doc(fs,"config","app"));return s.exists()?s.data():{}},
+ get user(){return auth.currentUser},
+ sendMessage:text=>addDoc(collection(fs,"mensajes"),{uid:auth.currentUser.uid,code:me.code,name:me.name,email:me.email,text,createdAt:serverTimestamp(),status:"nuevo"}),
+ myMessages:async()=>{const r=await getDocs(query(collection(fs,"mensajes"),where("uid","==",auth.currentUser.uid)));
+  return r.docs.map(d=>{const x=d.data();return{id:d.id,text:x.text,status:x.status,reply:x.reply||"",t:x.createdAt&&x.createdAt.toMillis?x.createdAt.toMillis():Date.now()}}).sort((a,b)=>b.t-a.t)},
  ready:async u=>{const ref=doc(fs,"users",u.uid);let s=await getDoc(ref);
   if(!s.exists()){const nm=u.displayName||(u.email||"").split("@")[0],c=await newCode(nm);
    await setDoc(ref,{name:nm,email:u.email||"",code:c,createdAt:serverTimestamp()});s=await getDoc(ref)}
-  me=s.data()},
+  const d=s.data();["createdAt","paidUntil","exemptUntil"].forEach(k=>{if(d[k]&&d[k].toMillis)d[k]=d[k].toMillis()});me=d},
  loadData:async()=>{const s=await getDoc(doc(fs,"datos",auth.currentUser.uid));return s.exists()?s.data().json:null},
  saveData:j=>setDoc(doc(fs,"datos",auth.currentUser.uid),{json:j,updatedAt:serverTimestamp()})
 };
@@ -124,7 +140,7 @@ let db=empty(),view="hoy",q="",per="todo";
 function empty(){return{clients:[],loans:[],payments:[],settings:{}}}
 function valid(d){return d&&typeof d==="object"&&["clients","loans","payments"].every(k=>Array.isArray(d[k]))}
 function load(){try{const d=JSON.parse(localStorage.getItem(KEY));return valid(d)?norm(d):empty()}catch(e){return empty()}}
-let _st;function save(){clearTimeout(_st);_st=setTimeout(()=>{if(!window.FB)return;FB.saveData(JSON.stringify(db)).catch(()=>toast("No se pudo guardar. Revisa tu conexión"))},400)}
+let _st;function save(){if(typeof locked==="function"&&locked())return;clearTimeout(_st);_st=setTimeout(()=>{if(!window.FB)return;FB.saveData(JSON.stringify(db)).catch(()=>toast("No se pudo guardar. Revisa tu conexión"))},400)}
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const $=s=>document.querySelector(s);
 const r2=n=>Math.round((n+Number.EPSILON)*100)/100;
@@ -253,13 +269,13 @@ resumen(){
  <div class="card"><h2>Por mes</h2><table><tr><th>Mes</th><th>Recaudado</th><th>Capital</th><th>Ganancia</th></tr>${rows.join("")}</table></div>`;
 },
 ajustes(){
- return`<h1>Ajustes</h1><div class="card"><h2>Copia de seguridad</h2><p class="mt">Descarga un archivo de Excel con tus clientes, préstamos y pagos.</p><div class="acts" style="margin-top:14px"><button class="btn" data-a="exportar">Descargar copia de seguridad</button></div></div><div class="card" style="margin-top:14px"><h2>Mi cuenta</h2><p class="mt">${esc(((window.FB&&FB.me)||{}).email||"")}</p><p class="mt">Mi código: <b>${esc(((window.FB&&FB.me)||{}).code||"")}</b></p><div class="acts" style="margin-top:14px"><button class="btn g" data-a="salir">Cerrar sesión</button></div></div>`;
+ return`<h1>Ajustes</h1><div class="card"><h2>Copia de seguridad</h2><p class="mt">Descarga un archivo de Excel con tus clientes, préstamos y pagos.</p><div class="acts" style="margin-top:14px"><button class="btn" data-a="exportar">Descargar copia de seguridad</button></div></div><div class="card" style="margin-top:14px"><h2>Mi cuenta</h2><p class="mt">${esc(((window.FB&&FB.me)||{}).email||"")}</p><p class="mt">Mi código: <b>${esc(((window.FB&&FB.me)||{}).code||"")}</b></p><p class="mt">${memText()}</p><div class="acts" style="margin-top:14px"><button class="btn" data-a="plan">Pagar membresía</button><button class="btn g" data-a="soporte">Soporte</button><button class="btn g" data-a="salir">Cerrar sesión</button></div></div>`;
 }};
 const NAV=[["hoy","Hoy"],["clientes","Clientes"],["historial","Historial"],["resumen","Resumen"],["ajustes","Ajustes"]];
 function render(){
  const nl=active().filter(l=>l.nextDate<today()).length;
  $("#nav").innerHTML=NAV.map(([k,l])=>`<button data-a="go" data-id="${k}" class="${view===k?"on":""}">${l}${k==="hoy"&&nl?`<span class="bdg">${nl}</span>`:""}</button>`).join("");
- $("#app").innerHTML=VIEWS[view]();
+ document.body.classList.toggle("ro",locked());$("#app").innerHTML=banner()+VIEWS[view]();
  const i=$("#q");if(i)i.oninput=e=>{q=e.target.value;const p=e.target.selectionStart;render();const n=$("#q");n.focus();n.setSelectionRange(p,p)};
  const p=$("#per");if(p)p.onchange=e=>{per=e.target.value;render()};
 }
@@ -458,14 +474,67 @@ function demo(){
  save();render();toast("Datos de demostración cargados");
 }
 
+/* ===== MEMBRESÍA ===== */
+const DAY=864e5,fmtd=t=>{const d=new Date(t);return pad(d.getDate())+"/"+pad(d.getMonth()+1)+"/"+d.getFullYear()};
+function mem(){const m=(window.FB&&FB.me)||{},n=Date.now(),c=m.createdAt||n,dl=x=>Math.max(1,Math.ceil((x-n)/DAY));
+ if(m.blocked)return{s:"locked"};
+ if(m.exempt||(m.exemptUntil&&n<m.exemptUntil))return{s:"exempt"};
+ const t=c+15*DAY,p=m.paidUntil||0;
+ if(n<p)return{s:"paid",d:dl(p),u:p};
+ if(n<t)return{s:"trial",d:dl(t)};
+ if(p&&n<p+5*DAY)return{s:"grace",d:dl(p+5*DAY)};
+ return{s:"locked"}}
+const locked=()=>mem().s==="locked";
+const dd=n=>n+(n===1?" día":" días");
+function memText(){const m=mem();return{exempt:"Membresía: exonerada",paid:"Membresía activa hasta "+(m.u?fmtd(m.u):""),trial:"Prueba gratis: "+(m.d?dd(m.d):"")+" restantes",grace:"Membresía vencida: te quedan "+(m.d?dd(m.d):""),locked:"Membresía vencida: modo solo lectura"}[m.s]}
+function banner(){const m=mem();let t,c;
+ if(m.s==="trial"){t="Prueba gratis: "+(m.d===1?"te queda 1 día":"te quedan "+m.d+" días");c=""}
+ else if(m.s==="paid"&&m.d<=5){t="Tu membresía vence en "+dd(m.d);c="wn"}
+ else if(m.s==="grace"){t="Membresía vencida. Te quedan "+dd(m.d)+" para renovar";c="er"}
+ else if(m.s==="locked"){t="Membresía vencida: solo lectura";c="er"}
+ else return"";
+ return`<div class="mb ${c}"><span>${t}</span><button class="btn s" data-a="plan">${m.s==="trial"||m.s==="paid"?"Ver planes":"Pagar"}</button></div>`}
+function roView(a,id){let c,l;if(a==="ver")c=db.clients.find(x=>x.id===id);else{l=db.loans.find(x=>x.id===id);c=l&&db.clients.find(x=>x.id===l.clientId)}
+ if(!c)return;const ph=String(c.phone||"").replace(/\D/g,""),w=ph.length===10?"1"+ph:ph,
+ txt=encodeURIComponent("Hola "+c.name+", te escribo para recordarte tu pago"+(l?" de "+money(balance(l)):"")+".");
+ openModal(`<h2>${esc(c.name)}</h2><p class="mt">${esc(c.phone||"Sin teléfono")}</p>${l?`<p>Debe ${money(balance(l))}</p>`:""}<p class="mt" style="margin-top:10px">Modo solo lectura: renueva tu membresía para registrar cobros.</p><div class="mf"><button class="btn g" data-close>Cerrar</button>${w?`<a class="btn" href="https://wa.me/${w}?text=${txt}" target="_blank" rel="noopener">WhatsApp</a>`:""}</div>`)}
+let _cfg=null,_plan="m";
+const rdn=n=>"RD$"+(+n||0).toLocaleString("es-DO");
+function PR(){const c=_cfg||{},m=+c.priceMonthly||500,y=+c.priceYearly||4800,me=(window.FB&&FB.me)||{},v=+me.discValue||0;
+ if(me.discType==="pct"&&v>0)return{m:Math.round(m*(1-v/100)),y:Math.round(y*(1-v/100)),m0:m,y0:y};
+ if(me.discType==="fix"&&v>0)return{m:v,y:Math.round(y*v/m),m0:m,y0:y};
+ return{m,y,m0:m,y0:y}}
+async function planFlow(){openModal('<p class="mt">Cargando…</p>');try{await FB.refresh();_cfg=await FB.getConfig()}catch(e){}
+ if(!locked()||true)planStep1()}
+function planStep1(){const p=PR(),sv=Math.round((1-p.y0/(12*p.m0))*100),
+ opt=(k,l,pr,pr0,sub)=>`<label class="pl${_plan===k?" on":""}"><input type="radio" name="pl" value="${k}" ${_plan===k?"checked":""}><div><b>${l}</b><div class="mt">${sub}</div></div><div style="text-align:right">${pr<pr0?`<s class="mt">${rdn(pr0)}</s><br>`:""}<b>${rdn(pr)}</b></div></label>`;
+ openModal(`<h2>Pagar membresía</h2><p class="mt" style="margin-bottom:10px">Elige tu plan</p>${opt("m","Mensual",p.m,p.m0,"Cada mes")}${opt("y","Anual",p.y,p.y0,sv>0?"Ahorras "+sv+"%":"Cada año")}<div class="mf"><button class="btn g" data-close>Cancelar</button><button class="btn" id="pn">Siguiente</button></div>`);
+ document.querySelectorAll("input[name=pl]").forEach(i=>i.onchange=()=>{_plan=i.value;planStep1()});
+ $("#pn").onclick=planStep2}
+function planStep2(){const c=_cfg||{},p=PR(),amt=_plan==="m"?p.m:p.y,me=FB.me||{},b=c.bank||{},nm=_plan==="m"?"mensual":"anual",w=String(c.whatsapp||"").replace(/\D/g,""),
+ msg=encodeURIComponent("Hola, soy "+me.name+" ("+me.email+"). Mi código: "+me.code+". Pagué la Membresía RutaCobro, plan "+nm+", "+rdn(amt)+". Adjunto el comprobante."),
+ row=(l,v)=>v?`<div class="bk"><div><div class="mt">${l}</div><b>${esc(v)}</b></div>${l==="Número de cuenta"?`<button class="btn g s" data-copy="${esc(v)}">Copiar</button>`:""}</div>`:"";
+ openModal(`<h2>Transferencia</h2><p class="mt">Plan ${nm}: <b style="color:var(--tx)">${rdn(amt)}</b></p>${b.number&&w?`<p class="mt" style="margin:8px 0">El pago se realiza por transferencia. Hazla en tu banco o en la sucursal más cercana a esta cuenta:</p>${row("Banco",b.name)}${row("Titular",b.holder)}${row("Tipo de cuenta",b.type)}${row("Número de cuenta",b.number)}<p class="mt" style="margin:8px 0">Luego envía la foto del comprobante por WhatsApp.</p><div class="mf"><button class="btn g" id="pb">Atrás</button><a class="btn" href="https://wa.me/${w}?text=${msg}" target="_blank" rel="noopener">Enviar comprobante por WhatsApp</a></div>`:`<p style="margin:10px 0">Los datos de pago aún no están disponibles. Intenta más tarde.</p><div class="mf"><button class="btn g" id="pb">Atrás</button></div>`}`);
+ $("#pb").onclick=planStep1;
+ document.querySelectorAll("[data-copy]").forEach(x=>x.onclick=()=>{try{navigator.clipboard.writeText(x.dataset.copy).then(()=>toast("Copiado"))}catch(e){toast("No se pudo copiar")}})}
+async function supportFlow(){openModal('<p class="mt">Cargando…</p>');let ms=[];
+ try{const r=await Promise.all([FB.getConfig(),FB.myMessages()]);_cfg=r[0];ms=r[1]}catch(e){}
+ const w=String((_cfg||{}).whatsapp||"").replace(/\D/g,""),me=FB.me||{},SL={nuevo:"Enviado",leido:"Leído",resuelto:"Resuelto"},
+ urg=w?`<a class="btn g" href="https://wa.me/${w}?text=${encodeURIComponent("URGENTE. Soy "+me.name+" ("+me.email+"), código "+me.code+". ")}" target="_blank" rel="noopener">Urgente: escribir por WhatsApp</a>`:"";
+ openModal(`<h2>Soporte</h2><p class="mt">Cuéntanos tu queja, duda o sugerencia.</p><textarea id="sm" maxlength="1000" placeholder="Escribe tu mensaje"></textarea><div class="mf"><button class="btn g" data-close>Cerrar</button><button class="btn" id="ss">Enviar</button></div><div style="margin-top:8px">${urg}</div>${ms.length?`<h2 style="margin-top:16px">Tus mensajes</h2>${ms.map(m=>`<div class="sm"><div class="mt">${fmtd(m.t)} · ${SL[m.status]||"Enviado"}</div><div>${esc(m.text)}</div>${m.reply?`<div class="rp"><div class="mt">Respuesta de soporte</div>${esc(m.reply)}</div>`:""}</div>`).join("")}`:""}`);
+ $("#ss").onclick=()=>{const t=$("#sm").value.trim();if(!t)return toast("Escribe tu mensaje");$("#ss").disabled=true;
+  FB.sendMessage(t).then(()=>{toast("Mensaje enviado");supportFlow()}).catch(()=>{toast("No se pudo enviar. Intenta de nuevo");$("#ss").disabled=false})}}
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&window.FB&&FB.user&&FB.me)FB.refresh().then(render).catch(()=>{})});
+
 /* ===== EVENTOS ===== */
-const A={salir:()=>confirmBox("¿Cerrar sesión en este dispositivo?",()=>{closeModal();FB.signOut()},"Cerrar sesión"),eliminarCliente,recibo:i=>receiptModal(db.payments.find(p=>p.id===i)),go,nuevoCliente:()=>clientForm(),editCliente:i=>clientForm(i),prestar,editLoan,cobrar,ver,exportar,importar:()=>$("#file").click(),
+const A={plan:planFlow,soporte:supportFlow,salir:()=>confirmBox("¿Cerrar sesión en este dispositivo?",()=>{closeModal();FB.signOut()},"Cerrar sesión"),eliminarCliente,recibo:i=>receiptModal(db.payments.find(p=>p.id===i)),go,nuevoCliente:()=>clientForm(),editCliente:i=>clientForm(i),prestar,editLoan,cobrar,ver,exportar,importar:()=>$("#file").click(),
  demo:()=>confirmBox("Se agregarán 3 clientes de prueba. ¿Continuar?",demo,"Cargar"),
  borrar:()=>confirmBox("Se borrarán todos los clientes, préstamos y pagos. No se puede deshacer. ¿Descargaste un respaldo?",()=>{try{localStorage.removeItem(KEY)}catch(e){}db=empty();render();toast("Datos borrados")},"Sí, borrar todo")};
 document.addEventListener("click",e=>{
  if(e.target.closest("[data-close]")||e.target.id==="ov")return closeModal();
  const b=e.target.closest("[data-a]");if(!b||!A[b.dataset.a])return;
  const a=b.dataset.a;if(["go","ver"].indexOf(a)<0&&["editCliente","prestar","editLoan"].indexOf(a)>=0)closeModal();
+ if(locked()&&["go","exportar","salir","plan","recibo","soporte"].indexOf(a)<0){if(["editLoan","ver","cobrar"].indexOf(a)>=0)return roView(a,b.dataset.id);return toast("Membresía vencida: solo lectura")}
  A[a](b.dataset.id);
 });
 
