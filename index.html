@@ -61,12 +61,11 @@ table{width:100%;border-collapse:collapse;font-size:13px}th{color:var(--mt);font
 .live span{color:var(--mt)}
  .acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 /* Ficha del cliente: resumen compacto y préstamos separados */
-.client-summary{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(54px,.55fr) minmax(0,1.4fr);gap:0;margin-top:12px;padding:0;overflow:hidden}
+.client-summary{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0;margin-top:12px;padding:0;overflow:hidden}
 .client-stat{padding:10px 12px;min-width:0}
 .client-stat+.client-stat{border-left:1px solid rgba(27,42,68,.8)}
 .client-stat .l{font-size:12px}
 .client-stat .v{font-size:16px;margin-top:1px;white-space:normal;overflow-wrap:anywhere;line-height:1.25}
-.client-stat:nth-child(2) .v{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .client-section-title{font-size:17px;font-weight:650;margin:16px 0 9px}
 .loan-card{background:rgba(9,17,31,.58);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:13px;margin-bottom:10px;box-shadow:0 6px 18px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.06);backdrop-filter:blur(16px) saturate(1.25);-webkit-backdrop-filter:blur(16px) saturate(1.25)}
 .loan-info{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:9px 16px;align-items:start;width:100%}
@@ -82,7 +81,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th{color:var(--mt);font
 .renew-preview div{padding:4px 0}
 .renew-preview b{font-size:14px}
 @media(max-width:420px){
- .client-summary{grid-template-columns:minmax(0,1.4fr) minmax(48px,.55fr) minmax(0,1.4fr)}
+ .client-summary{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
  .client-stat{padding:9px 8px}
  .client-stat .v{font-size:15px}
  .loan-info{grid-template-columns:1fr}
@@ -545,8 +544,8 @@ function receiptModal(p,title){
 function ver(cid){
  const c=client(cid),ls=db.loans.filter(l=>l.clientId===cid).sort(byDate),ps=db.payments.filter(p=>p.clientId===cid).sort((a,b)=>b.date.localeCompare(a.date));
  openModal(`<h2>${esc(c.name)}</h2><div class="mt">${esc(c.phone||"Sin teléfono")} · ${esc(c.ref||"Sin referencia")}</div>
- <div class="card client-summary"><div class="client-stat"><div class="l">Debe</div><div class="v">${money(sum(active().filter(l=>l.clientId===cid),balance))}</div></div><div class="client-stat"><div class="l">Préstamos</div><div class="v">${ls.length}</div></div><div class="client-stat"><div class="l">Ganancia cobrada</div><div class="v">${money(sum(ps,p=>p.interest))}</div></div></div>
- <div class="client-section-title">Préstamos</div>
+ <div class="card client-summary"><div class="client-stat"><div class="l">Debe</div><div class="v">${money(sum(active().filter(l=>l.clientId===cid),balance))}</div></div><div class="client-stat"><div class="l">Ganancia cobrada</div><div class="v">${money(sum(ps,p=>p.interest))}</div></div></div>
+ <div class="client-section-title">Préstamos <span class="mt" style="font-size:14px;font-weight:500">(${ls.length})</span></div>
  ${ls.length?ls.map(l=>`<div class="loan-card"><div class="loan-info"><div><div class="loan-title"><b>${money(l.capital)}</b></div><div class="loan-meta"><div class="mt">${desc(l)} · ${FL[l.freq].toLowerCase()}</div><div class="mt">Debe <b style="color:var(--tx)">${money(balance(l))}</b></div></div></div><div class="loan-meta"><div class="mt">Próximo cobro</div><div>${isDone(l)?"Liquidado":fdate(l.nextDate)}</div><div>${isDone(l)?"":status(l)}</div></div></div><div class="loan-actions"><button class="btn g" data-a="editLoan" data-id="${l.id}">Editar</button>${isDone(l)?"":`<button class="btn" data-a="cobrar" data-id="${l.id}">Cobrar</button><button class="btn g" data-a="renovar" data-id="${l.id}">Renovar</button>`}<button class="btn d" data-a="eliminarPrestamo" data-id="${l.id}">Eliminar</button></div></div>`).join(""):`<div class="empty">Este cliente todavía no tiene préstamos.</div>`}
  <div class="client-section-title">Movimientos</div>${ps.length?`<div class="card" style="margin-bottom:0">${ps.map(p=>`<div class="it"><div class="grow"><div>${fdate(p.date)} · ${concept(p)}</div><div class="mt">${esc(p.note||"")}</div></div><div style="text-align:right"><b>${money(p.interest+p.capital)}</b><div class="mt">Capital ${money(p.capital)}</div><div class="mt" style="color:var(--ok)">Ganancia ${money(p.interest)}</div></div><button class="btn s g" data-a="recibo" data-id="${p.id}">Recibo</button></div>`).join("")}</div>`:`<div class="mt">Sin movimientos.</div>`}
  <div class="client-footer-actions"><button class="btn g" data-close>Cerrar</button><button class="btn g" data-a="editCliente" data-id="${cid}">Editar datos</button><button class="btn" data-a="prestar" data-id="${cid}">Nuevo préstamo</button><button class="btn d" data-a="eliminarCliente" data-id="${cid}">Eliminar cliente</button></div>`);
