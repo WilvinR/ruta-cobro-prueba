@@ -46,7 +46,7 @@ label{display:block;color:var(--mt);font-size:13px;margin-bottom:4px}
 .big{background:#050b16;border:1px solid var(--bd);border-radius:14px;padding:12px;margin-bottom:12px;display:flex;justify-content:space-between;gap:10px}
 .live{background:rgba(47,123,255,.09);border:1px solid var(--bd);border-radius:12px;padding:10px 12px;font-size:14px}
 .live div{display:flex;justify-content:space-between;padding:2px 0}
-.daypicker{border:1px solid var(--bd);border-radius:10px;background:var(--bg);padding:8px 10px}.daypicker summary{cursor:pointer;font-weight:600}.daygrid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:9px}.daygrid label{position:relative}.daygrid input{position:absolute;opacity:0;pointer-events:none}.daygrid span{display:flex;align-items:center;justify-content:center;min-height:32px;border:1px solid var(--bd);border-radius:8px;cursor:pointer}.daygrid input:checked+span{background:var(--ac);color:#fff;border-color:var(--ac)}
+.custom-days-trigger{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;background:rgba(255,255,255,.07);color:var(--tx);border:1px solid rgba(255,255,255,.13);border-radius:14px;padding:11px 12px;font:inherit;cursor:pointer;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}.custom-days-trigger:focus{border-color:var(--ce);outline:0}.custom-days-trigger .cdt-value{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.custom-days-trigger .cdt-arrow{color:var(--mt);font-size:13px}.custom-days-overlay{position:fixed;inset:0;background:rgba(0,0,0,.62);display:flex;align-items:center;justify-content:center;padding:18px;z-index:80;backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}.custom-days-modal{width:min(100%,420px);background:rgba(18,24,40,.94);border:1px solid rgba(255,255,255,.14);border-radius:24px;padding:16px;box-shadow:0 18px 45px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.08);backdrop-filter:blur(22px) saturate(1.35);-webkit-backdrop-filter:blur(22px) saturate(1.35)}.custom-days-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}.custom-days-head h3{font-size:17px}.custom-days-close{width:32px;height:32px;border:1px solid rgba(255,255,255,.14);border-radius:50%;background:rgba(255,255,255,.06);color:var(--tx);font-size:20px;line-height:1;cursor:pointer}.custom-days-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px}.custom-days-grid label{position:relative}.custom-days-grid input{position:absolute;opacity:0;pointer-events:none}.custom-days-grid span{display:flex;align-items:center;justify-content:center;min-height:38px;border:1px solid var(--bd);border-radius:10px;color:var(--mt);cursor:pointer;transition:.15s}.custom-days-grid input:checked+span{background:rgba(47,123,255,.2);border-color:var(--ce);color:var(--tx);box-shadow:inset 0 0 0 1px rgba(92,200,255,.22)}.custom-days-selected{color:var(--mt);font-size:13px;margin-top:13px}.custom-days-selected b{color:var(--tx);font-weight:600}.custom-days-footer{display:flex;justify-content:flex-end;margin-top:14px}.custom-days-footer .btn{min-width:92px}
 .mf{display:flex;gap:10px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
 .sep{border-top:1px solid var(--bd);padding-top:12px;color:var(--ce);font-size:14px}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--p2);border:1px solid var(--ce);padding:10px 20px;border-radius:999px;z-index:99}
@@ -76,7 +76,20 @@ table{width:100%;border-collapse:collapse;font-size:13px}th{color:var(--mt);font
 .loan-meta .mt{line-height:1.3}
 .loan-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:11px;padding-top:9px;border-top:1px solid rgba(27,42,68,.75)}
 .loan-actions .btn{width:100%;min-width:0;padding:8px 6px;font-size:13px}
-.client-footer-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:13px;padding-top:11px;border-top:1px solid var(--bd)}
+.client-footer-actions{display:none}
+.client-view{position:relative}
+.client-close{position:sticky;top:8px;margin-left:auto;z-index:12;display:flex;align-items:center;justify-content:center;width:34px;height:34px;border:1px solid rgba(255,255,255,.16);border-radius:50%;background:rgba(9,17,31,.82);color:var(--tx);font-size:21px;line-height:1;cursor:pointer;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 5px 16px rgba(0,0,0,.25)}
+.client-close:active{transform:scale(.94)}
+.client-actions-float{position:sticky;top:50px;z-index:11;display:flex;justify-content:center;pointer-events:none;margin:-2px 0 14px;padding:0 2px}
+.client-actions-float .caf-inner{display:flex;align-items:center;gap:6px;padding:6px 8px;border:1px solid rgba(255,255,255,.15);border-radius:999px;background:rgba(9,17,31,.78);box-shadow:0 10px 28px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.08);backdrop-filter:blur(18px) saturate(1.35);-webkit-backdrop-filter:blur(18px) saturate(1.35);pointer-events:auto}
+.client-actions-float .caf-btn{width:40px;height:40px;padding:0;border:0;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.06);color:var(--ce);cursor:pointer;box-shadow:inset 0 0 0 1px rgba(255,255,255,.09)}
+.client-actions-float .caf-btn:active{transform:scale(.93)}
+.client-actions-float .caf-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.client-actions-float .caf-new{color:var(--ok)}
+.client-actions-float .caf-edit{color:var(--ce)}
+.client-actions-float .caf-renew{color:var(--wn)}
+.client-actions-float .caf-delete{color:var(--er)}
+.client-actions-space{height:8px}
 .client-footer-actions .btn{width:100%;min-width:0;padding:9px 7px;font-size:13px}
 .client-footer-actions .btn.d{font-size:13px}
 .renew-preview{margin-top:2px}
@@ -407,7 +420,7 @@ const loanFields=()=>`<div><label>Tipo de préstamo *</label><select name="t"><o
 <div class="f2 tr"><div><label>Rédito por cobro (RD$) *</label><input name="fee" type="number" step="0.01" min="0" inputmode="decimal"></div><div><label>Rédito (%) *</label><input name="rp" type="number" step="0.01" min="0" inputmode="decimal"></div></div>
 <div class="f2 tc" hidden><div><label>Ganancia total (%) *</label><input name="pct" type="number" step="0.01" min="0" inputmode="decimal"></div><div><label>Número de cuotas *</label><input name="n" type="number" step="1" min="1" inputmode="numeric"></div></div>
 <div class="f2"><div><label>Cobro *</label><select name="freq"><option value="">Selecciona</option>${freqSel("")}</select></div><div><label>Fecha de entrega *</label><input name="date" type="date" value="${today()}"></div></div>
-<div class="f2"><div class="wdw" hidden><label>Día de cobro * <span class="mt">(viernes por defecto)</span></label><select name="wd"><option value="">Selecciona</option>${["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"].map((n,i)=>`<option value="${i}">${n}</option>`).join("")}</select></div><div class="cdw" hidden><label>Días de cobro *</label><details class="daypicker"><summary>Seleccionar días</summary><div class="daygrid">${Array.from({length:31},(_,i)=>i+1).map(d=>`<label><input type="checkbox" name="cd" value="${d}"><span>${d}</span></label>`).join("")}</div><div class="mt" style="margin-top:8px">Selecciona uno o varios días del mes.</div></details><div class="mt cdays-label"></div></div><div><label>Primer cobro *</label><input name="first" type="date"></div></div><div class="live" id="lv" hidden></div>`;
+<div class="f2"><div class="wdw" hidden><label>Día de cobro * <span class="mt">(viernes por defecto)</span></label><select name="wd"><option value="">Selecciona</option>${["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"].map((n,i)=>`<option value="${i}">${n}</option>`).join("")}</select></div><div class="cdw" hidden><label>Días de cobro *</label><button type="button" class="custom-days-trigger"><span class="cdt-value">Seleccionar días</span><span class="cdt-arrow">▾</span></button><div class="cdays-label" hidden></div></div><div><label>Primer cobro *</label><input name="first" type="date"></div></div><div class="live" id="lv" hidden></div>`;
 function bindLoan(fm){
  let autoFirst="",manualFirst=false;
  const setFirst=()=>{
@@ -428,13 +441,27 @@ function bindLoan(fm){
   if(e.target.name==="cap"&&num(fm.rp.value)>0)fm.fee.value=r2(cap*num(fm.rp.value)/100);
   if(e.target.name==="first")manualFirst=true;
   upd()});
+ const selectedDays=()=>[...fm.querySelectorAll('input[name="cd"]:checked')].map(x=>Number(x.value)).sort((a,b)=>a-b);
+ const daysText=ds=>ds.length===1?String(ds[0]):ds.length===2?`${ds[0]} y ${ds[1]}`:ds.length?`${ds.slice(0,-1).join(", ")} y ${ds[ds.length-1]}`:"Seleccionar días";
+ const refreshCustomLabel=()=>{const ds=selectedDays(),opt=fm.freq.querySelector('option[value="personalizado"]'),tr=fm.querySelector(".custom-days-trigger .cdt-value");if(opt)opt.textContent=ds.length?daysText(ds):"Personalizado";if(tr)tr.textContent=ds.length?daysText(ds):"Seleccionar días"};
+ const openCustomDays=()=>{
+  const current=selectedDays(),overlay=document.createElement("div");overlay.className="custom-days-overlay";
+  overlay.innerHTML=`<div class="custom-days-modal" role="dialog" aria-modal="true" aria-label="Seleccionar días de cobro"><div class="custom-days-head"><h3>Seleccionar días</h3><button type="button" class="custom-days-close" aria-label="Cerrar">×</button></div><div class="custom-days-grid">${Array.from({length:31},(_,i)=>i+1).map(d=>`<label><input type="checkbox" value="${d}" ${current.includes(d)?"checked":""}><span>${d}</span></label>`).join("")}</div><div class="custom-days-selected">Seleccionados: <b class="cdm-selected">${current.length?daysText(current):"Ninguno"}</b></div><div class="custom-days-footer"><button type="button" class="btn">Listo</button></div></div>`;
+  document.body.appendChild(overlay);
+  const close=()=>overlay.remove(),grid=overlay.querySelectorAll('input[type="checkbox"]'),selected=overlay.querySelector(".cdm-selected");
+  const refresh=()=>{const ds=[...overlay.querySelectorAll('input:checked')].map(x=>Number(x.value)).sort((a,b)=>a-b);selected.textContent=ds.length?daysText(ds):"Ninguno"};
+  grid.forEach(x=>x.addEventListener("change",refresh));
+  overlay.querySelector(".custom-days-close").onclick=close;
+  overlay.querySelector(".custom-days-footer .btn").onclick=()=>{fm.querySelectorAll('input[name="cd"]').forEach(x=>x.checked=false);overlay.querySelectorAll('input:checked').forEach(x=>{const target=fm.querySelector(`input[name="cd"][value="${x.value}"]`);if(target)target.checked=true});refreshCustomLabel();sug();close()};
+ };
  const sug=()=>{
   const weekly=fm.freq.value==="semanal",custom=fm.freq.value==="personalizado";
   fm.querySelector(".wdw").hidden=!weekly;fm.querySelector(".cdw").hidden=!custom;
   if(weekly&&fm.wd.value==="")fm.wd.value="5";
-  setFirst();
+  refreshCustomLabel();setFirst();
  };
- fm.addEventListener("change",e=>{if(e.target.name==="freq"||e.target.name==="date"||e.target.name==="wd"||e.target.name==="cd")sug();if(e.target.name==="t")upd();if(e.target.name==="cd"){const ds=[...fm.querySelectorAll('input[name="cd"]:checked')].map(x=>x.value);fm.querySelector('.cdays-label').textContent=ds.length?`Seleccionados: ${ds.join(", ")}`:"Selecciona uno o varios días del mes."}});
+ fm.querySelector(".custom-days-trigger").addEventListener("click",openCustomDays);
+ fm.addEventListener("change",e=>{if(e.target.name==="freq"||e.target.name==="date"||e.target.name==="wd")sug();if(e.target.name==="t")upd()});
  if(!fm.date.value)fm.date.value=today();
  /* El primer cobro se calcula automáticamente; el usuario puede cambiarlo después. */
  fm.first.value="";manualFirst=false;
@@ -482,7 +509,9 @@ function editLoan(id){
  fm.freq.value=l.freq;fm.date.value=l.startDate||today();fm.wd.value=l.wd==null?5:l.wd;
  bindLoan(fm);
  if(Array.isArray(l.customDays))l.customDays.forEach(d=>{const x=fm.querySelector(`input[name="cd"][value="${d}"]`);if(x)x.checked=true});
- fm.querySelector(".cdays-label").textContent=Array.isArray(l.customDays)&&l.customDays.length?`Seleccionados: ${l.customDays.join(", ")}`:"Selecciona uno o varios días del mes.";
+ const cdayLabel=fm.querySelector(".custom-days-trigger .cdt-value"),cdayOpt=fm.freq.querySelector('option[value="personalizado"]'),cdayList=Array.isArray(l.customDays)?l.customDays:[];
+ const cdayText=cdayList.length===1?String(cdayList[0]):cdayList.length===2?cdayList[0]+" y "+cdayList[1]:"Seleccionar días";
+ if(cdayLabel)cdayLabel.textContent=cdayText;if(cdayOpt&&cdayList.length)cdayOpt.textContent=cdayText;
  fm.first.value=l.nextDate;fm.first.dispatchEvent(new Event("input",{bubbles:true}));
  fm.onsubmit=e=>{e.preventDefault();const o=readLoan(fm,true);if(!o)return;
   const same=o.t===l.type&&Math.abs(o.cap-l.capital)<EPS&&(isC?(o.n===l.n&&Math.abs(o.pct-curPct)<0.005):Math.abs(o.fee-l.fee)<EPS);
@@ -572,12 +601,18 @@ function receiptModal(p,title){
 }
 function ver(cid){
  const c=client(cid),ls=db.loans.filter(l=>l.clientId===cid&&!l.renewed).sort(byDate),ps=db.payments.filter(p=>p.clientId===cid).sort((a,b)=>{const d=b.date.localeCompare(a.date);return d||String(b.id||"").localeCompare(String(a.id||""))});
- openModal(`<h2>${esc(c.name)}</h2><div class="mt">${esc(c.phone||"Sin teléfono")} · ${esc(c.ref||"Sin referencia")}</div>
+ openModal(`<div class="client-view"><button class="client-close" type="button" data-close aria-label="Cerrar">×</button><h2>${esc(c.name)}</h2><div class="mt">${esc(c.phone||"Sin teléfono")} · ${esc(c.ref||"Sin referencia")}</div>
  <div class="card client-summary"><div class="client-stat"><div class="l">Debe</div><div class="v">${money(sum(active().filter(l=>l.clientId===cid),balance))}</div></div><div class="client-stat"><div class="l">Ganancia cobrada</div><div class="v">${money(sum(ps,p=>p.interest))}</div></div></div>
+ <div class="client-actions-float"><div class="caf-inner">
+ <button class="caf-btn caf-new" type="button" data-a="prestar" data-id="${cid}" aria-label="Nuevo préstamo" title="Nuevo préstamo"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+ <button class="caf-btn caf-edit" type="button" data-a="editCliente" data-id="${cid}" aria-label="Editar cliente" title="Editar cliente"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg></button>
+ <button class="caf-btn caf-renew" type="button" data-a="renovar" data-id="${ls.length===1?ls[0].id:""}" aria-label="Renovar préstamo" title="Renovar préstamo" ${ls.length!==1?"disabled":""}><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14.9-4M4 5v4h4"/><path d="M4 13a8 8 0 0 0 14.9 4M20 19v-4h-4"/></svg></button>
+ <button class="caf-btn caf-delete" type="button" data-a="eliminarCliente" data-id="${cid}" aria-label="Eliminar cliente" title="Eliminar cliente"><svg viewBox="0 0 24 24"><path d="M3 6h18M9 6V4h6v2M8 10v7M16 10v7M5 6l1 15h12l1-15"/></svg></button>
+ </div></div><div class="client-actions-space"></div>
  <div class="client-section-title">Préstamos <span class="mt" style="font-size:14px;font-weight:500">(${ls.length})</span></div>
  ${ls.length?ls.map(l=>`<div class="loan-card"><div class="loan-info"><div><div class="loan-title"><b>${money(l.capital)}</b></div><div class="loan-meta"><div class="mt">${desc(l)} · ${FL[l.freq].toLowerCase()}</div><div class="mt">Debe <b style="color:var(--tx)">${money(balance(l))}</b></div></div></div><div class="loan-meta"><div class="mt">Próximo cobro</div><div>${isDone(l)?"Liquidado":fdate(l.nextDate)}</div><div>${isDone(l)?"":status(l)}</div></div></div><div class="loan-actions"><button class="btn g" data-a="editLoan" data-id="${l.id}">Editar</button>${isDone(l)?"":`<button class="btn" data-a="cobrar" data-id="${l.id}">Cobrar</button><button class="btn g" data-a="renovar" data-id="${l.id}">Renovar</button>`}<button class="btn d" data-a="eliminarPrestamo" data-id="${l.id}">Eliminar</button></div></div>`).join(""):`<div class="empty">Este cliente todavía no tiene préstamos.</div>`}
  <div class="client-section-title">Movimientos</div>${ps.length?`<div class="card movements-list" style="margin-bottom:0">${ps.map(p=>`<div class="it"><div class="grow"><div>${fdate(p.date)} · ${concept(p)}</div><div class="mt">${esc(p.note||"")}</div></div><div style="text-align:right"><b>${money(p.interest+p.capital)}</b><div class="mt">Capital ${money(p.capital)}</div><div class="mt" style="color:var(--ok)">Ganancia ${money(p.interest)}</div></div><button class="btn s g" data-a="recibo" data-id="${p.id}">Recibo</button></div>`).join("")}</div>`:`<div class="mt">Sin movimientos.</div>`}
- <div class="client-footer-actions"><button class="btn g" data-close>Cerrar</button><button class="btn g" data-a="editCliente" data-id="${cid}">Editar datos</button><button class="btn" data-a="prestar" data-id="${cid}">Nuevo préstamo</button><button class="btn d" data-a="eliminarCliente" data-id="${cid}">Eliminar cliente</button></div>`);
+ </div>`);
 }
 /* ===== RESPALDO ===== */
 const loadXL=()=>window.ExcelJS?Promise.resolve():new Promise((ok,no)=>{const x=document.createElement("script");x.src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js";x.onload=ok;x.onerror=no;document.head.appendChild(x)});
