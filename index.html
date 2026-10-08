@@ -11,7 +11,7 @@
 *{box-sizing:border-box;margin:0}
 html,body{background:#000;color:var(--tx);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
 body{min-height:100vh}
-header{position:sticky;top:0;z-index:20;background:#000;border-bottom:1px solid var(--bd);padding:14px 14px 8px}
+header{position:sticky;top:0;z-index:20;background:rgba(0,0,0,.72);border-bottom:1px solid rgba(255,255,255,.12);padding:14px 14px 8px;backdrop-filter:blur(20px) saturate(1.35);-webkit-backdrop-filter:blur(20px) saturate(1.35)}
 .wrap{max-width:760px;margin:0 auto}
 .brand svg{width:100%;max-width:300px;height:auto;display:block}
 .brand small{display:block;color:var(--ce);font-size:11.5px;letter-spacing:.14em;margin-top:6px;opacity:.85}
@@ -21,7 +21,7 @@ nav button.on{background:var(--p2);color:var(--ce);box-shadow:inset 0 0 0 1px va
 main{padding:16px 14px 60px}
 h1{font-size:20px;margin-bottom:12px}h2{font-size:17px;margin-bottom:10px}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
-.card{background:var(--p);border:1px solid var(--bd);border-radius:16px;padding:14px;box-shadow:0 8px 24px rgba(0,0,0,.4);margin-bottom:12px}
+.card{background:rgba(9,17,31,.68);border:1px solid rgba(255,255,255,.13);border-radius:18px;padding:14px;box-shadow:0 8px 24px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.08);backdrop-filter:blur(20px) saturate(1.35);-webkit-backdrop-filter:blur(20px) saturate(1.35);margin-bottom:12px}
 .grid .card{margin:0}
 .l{color:var(--mt);font-size:13px}.v{font-size:20px;font-weight:650;margin-top:2px;word-break:break-word}
 .it{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #15233b}.it:last-child{border:0}
@@ -33,15 +33,15 @@ h1{font-size:20px;margin-bottom:12px}h2{font-size:17px;margin-bottom:10px}
 .btn.d{background:#a94b4b}
 .tag{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:550;border:1px solid}
 .t-ok{color:var(--ok);border-color:rgba(95,207,154,.35)}.t-wn{color:var(--wn);border-color:rgba(240,178,90,.35)}.t-er{color:var(--er);border-color:rgba(236,122,122,.35)}.t-mt{color:var(--mt);border-color:rgba(143,163,192,.35)}
-input,select,textarea{width:100%;background:#050b16;color:var(--tx);border:1px solid var(--bd);border-radius:12px;padding:11px 12px;font:inherit;outline:0}
+input,select,textarea{width:100%;background:rgba(255,255,255,.07);color:var(--tx);border:1px solid rgba(255,255,255,.13);border-radius:14px;padding:11px 12px;font:inherit;outline:0;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
 input:focus,select:focus{border-color:var(--ce)}
 label{display:block;color:var(--mt);font-size:13px;margin-bottom:4px}
 .f{display:grid;gap:12px}.f2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
 .empty{text-align:center;color:var(--mt);padding:26px 8px}.empty .btn{margin-top:12px}
-.ov{position:fixed;inset:0;background:rgba(0,0,0,.78);display:none;align-items:flex-end;justify-content:center;z-index:50}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:flex-end;justify-content:center;z-index:50;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px)}
 .ov.on{display:flex}
-.md{background:var(--p);border:1px solid var(--bd);border-radius:22px 22px 0 0;width:100%;max-width:560px;max-height:92vh;overflow:auto;padding:18px;animation:up .22s ease}
+.md{background:rgba(18,24,40,.86);border:1px solid rgba(255,255,255,.13);border-radius:26px 26px 0 0;width:100%;max-width:560px;max-height:92vh;overflow:auto;padding:18px;animation:up .22s ease;backdrop-filter:blur(20px) saturate(1.4);-webkit-backdrop-filter:blur(20px) saturate(1.4);box-shadow:0 -10px 35px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.08)}
 @keyframes up{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
 .big{background:#050b16;border:1px solid var(--bd);border-radius:14px;padding:12px;margin-bottom:12px;display:flex;justify-content:space-between;gap:10px}
 .live{background:rgba(47,123,255,.09);border:1px solid var(--bd);border-radius:12px;padding:10px 12px;font-size:14px}
@@ -60,6 +60,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th{color:var(--mt);font
 [hidden]{display:none!important}
 .live span{color:var(--mt)}
 .acts{display:flex;gap:8px;flex-wrap:wrap}
+.field-error{color:var(--er);font-size:12px;margin-top:-7px;line-height:1.25}.invalid{border-color:var(--er)!important;box-shadow:0 0 0 1px rgba(236,122,122,.18)}.field-wrap{min-width:0}
 
 
 .mb{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--bl);background:#0b1730;border-radius:14px;padding:10px 12px;margin-bottom:12px;font-size:14.5px}
@@ -99,10 +100,20 @@ textarea{width:100%;background:var(--p2);color:var(--tx);border:1px solid var(--
 <input type="file" id="file" accept=".json,application/json" hidden>
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import{getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,getRedirectResult,signOut,onAuthStateChanged,reauthenticateWithPopup,deleteUser}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import{getFirestore,collection,addDoc,query,where,getDocs,doc,getDoc,setDoc,deleteDoc,writeBatch,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import{getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,getRedirectResult,signOut,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import{getFirestore,collection,addDoc,query,where,getDocs,doc,getDoc,setDoc,updateDoc,deleteDoc,writeBatch,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const app=initializeApp({apiKey:"AIzaSyBIUEHtcuhPv3EmohKJtZ2FXsm6OsNQscY",authDomain:"rutacobrord.firebaseapp.com",projectId:"rutacobrord",storageBucket:"rutacobrord.firebasestorage.app",messagingSenderId:"626570456246",appId:"1:626570456246:web:6931e4e3f320c15e378a17"});
 const auth=getAuth(app),fs=getFirestore(app);let me=null;
+/* Contadores de uso (solo números): clientes, préstamos activos, nuevos por día y último movimiento */
+const doneL=l=>l.type==="c"?(l.total-l.paid<=0.005):(l.principal<=0.005);
+const dkey=t=>{const d=new Date(t);return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+function prune(d){const o={},lim=dkey(Date.now()-31*864e5);Object.keys(d||{}).forEach(k=>{if(k>=lim&&Array.isArray(d[k]))o[k]=d[k]});return o}
+async function pushStats(st){try{await updateDoc(doc(fs,"users",auth.currentUser.uid),{stats:st});if(me)me.stats=st}catch(e){}}
+function syncStats(C,L,P){try{const act=L.filter(l=>l&&!doneL(l)).length,s=me&&me.stats;
+ if(s&&s.c===C.length&&s.l===act)return;
+ let m=(s&&s.m)||0;
+ if(!s){const now=Date.now();[...P.map(p=>p&&p.date),...L.map(l=>l&&l.startDate)].forEach(x=>{const t=x?new Date(x+"T12:00:00").getTime():0;if(t&&t<=now&&t>m)m=t})}
+ pushStats({c:C.length,l:act,m,d:prune(s&&s.d)})}catch(e){}}
 function initials(n){const w=String(n||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^A-Za-z ]/g," ").trim().split(/\s+/).filter(Boolean);
  if(!w.length)return"XX";return(w.length>1?w[0][0]+w[1][0]:w[0].slice(0,2)).toUpperCase().padEnd(2,"X")}
 async function newCode(name){const i=initials(name);
@@ -123,22 +134,54 @@ window.FB={
  myMessages:async()=>{const r=await getDocs(query(collection(fs,"mensajes"),where("uid","==",auth.currentUser.uid)));
   return r.docs.map(d=>{const x=d.data();return{id:d.id,text:x.text,status:x.status,reply:x.reply||"",t:x.createdAt&&x.createdAt.toMillis?x.createdAt.toMillis():Date.now()}}).sort((a,b)=>b.t-a.t)},
  ready:async u=>{const ref=doc(fs,"users",u.uid);let s=await getDoc(ref);
-  if(!s.exists()){const nm=u.displayName||(u.email||"").split("@")[0];window.__creatingUid=u.uid;const c=await newCode(nm);delete window.__creatingUid;
+  if(!s.exists()){const nm=u.displayName||(u.email||"").split("@")[0],c=await newCode(nm);
    await setDoc(ref,{name:nm,email:u.email||"",code:c,createdAt:serverTimestamp()});s=await getDoc(ref)}
-  const d=s.data();
-  if(d.code){try{await setDoc(doc(fs,"codes",d.code),{uid:u.uid},{merge:true})}catch(e){}}
-  ["createdAt","paidUntil","exemptUntil"].forEach(k=>{if(d[k]&&d[k].toMillis)d[k]=d[k].toMillis()});try{d.pending=(await getDoc(doc(fs,"pendientes",u.uid))).exists()}catch(e){d.pending=false}me=d},
- loadData:async()=>{const s=await getDoc(doc(fs,"datos",auth.currentUser.uid));return s.exists()?s.data().json:null},
- saveData:j=>setDoc(doc(fs,"datos",auth.currentUser.uid),{json:j,updatedAt:serverTimestamp()}),
- deleteAccount:async()=>{
-  const u=auth.currentUser;if(!u)throw new Error("no-user");
-  const p=new GoogleAuthProvider();p.setCustomParameters({prompt:"select_account"});
-  await reauthenticateWithPopup(u,p);
-  const uid=u.uid;
-  const msgs=await getDocs(query(collection(fs,"mensajes"),where("uid","==",uid)));
-  const refs=[doc(fs,"users",uid),doc(fs,"datos",uid),doc(fs,"pendientes",uid),...(me&&me.code?[doc(fs,"codes",me.code)]:[]),...msgs.docs.map(x=>x.ref)];
-  for(let i=0;i<refs.length;i+=450){const b=writeBatch(fs);refs.slice(i,i+450).forEach(r=>b.delete(r));await b.commit()}
-  await deleteUser(u);me=null;
+  const d=s.data();["createdAt","paidUntil","exemptUntil"].forEach(k=>{if(d[k]&&d[k].toMillis)d[k]=d[k].toMillis()});try{d.pending=(await getDoc(doc(fs,"pendientes",u.uid))).exists()}catch(e){d.pending=false}me=d},
+ migrateLegacy:async()=>{
+  const uid=auth.currentUser.uid,base=doc(fs,"datos",uid),legacy=await getDoc(base);
+  if(!legacy.exists()||typeof legacy.data().json!=="string")return false;
+  let d;try{d=JSON.parse(legacy.data().json)}catch(e){return false}
+  if(!d||!Array.isArray(d.clients)||!Array.isArray(d.loans)||!Array.isArray(d.payments))return false;
+  const groups=[d.clients.map(x=>["clientes",x]),d.loans.map(x=>["prestamos",x]),d.payments.map(x=>["pagos",x])];
+  let batch=writeBatch(fs),n=0;
+  for(const group of groups)for(const [col,x] of group){if(!x||!x.id)continue;batch.set(doc(fs,"datos",uid,col,x.id),x);if(++n===450){await batch.commit();batch=writeBatch(fs);n=0}}
+  if(n)await batch.commit();
+  await setDoc(doc(fs,"datos",uid,"meta","main"),{version:2,migratedAt:serverTimestamp()},{merge:true});
+  await deleteDoc(base);
+  return true;
+ },
+ loadData:async()=>{
+  const uid=auth.currentUser.uid,base=doc(fs,"datos",uid);
+  const [cs,ls,ps]=await Promise.all([
+   getDocs(collection(fs,"datos",uid,"clientes")),
+   getDocs(collection(fs,"datos",uid,"prestamos")),
+   getDocs(collection(fs,"datos",uid,"pagos"))
+  ]);
+  if(!cs.empty||!ls.empty||!ps.empty){const C=cs.docs.map(d=>d.data()),L=ls.docs.map(d=>d.data()),P=ps.docs.map(d=>d.data());syncStats(C,L,P);return JSON.stringify({clients:C,loans:L,payments:P,settings:{}})}
+  const legacy=await getDoc(base);
+  if(legacy.exists()&&legacy.data().json){await window.FB.migrateLegacy();return window.FB.loadData()}
+  return null;
+ },
+ saveData:async j=>{
+  const uid=auth.currentUser.uid,d=JSON.parse(j),groups={clientes:d.clients||[],prestamos:d.loans||[],pagos:d.payments||[]};
+  const existing={};
+  for(const col of Object.keys(groups)){const r=await getDocs(collection(fs,"datos",uid,col));existing[col]=new Map(r.docs.map(x=>[x.id,x.data()]));}
+  const ops=[];
+  const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
+  for(const [col,arr] of Object.entries(groups)){
+   const next=new Map((arr||[]).filter(x=>x&&x.id).map(x=>[x.id,x]));
+   for(const [id,x] of next){if(!existing[col].has(id)||!same(existing[col].get(id),x))ops.push({t:"set",ref:doc(fs,"datos",uid,col,id),data:x});}
+   for(const id of existing[col].keys())if(!next.has(id))ops.push({t:"del",ref:doc(fs,"datos",uid,col,id)});
+  }
+  ops.push({t:"set",ref:doc(fs,"datos",uid,"meta","main"),data:{version:2,updatedAt:serverTimestamp()},merge:true});
+  for(let i=0;i<ops.length;i+=450){const b=writeBatch(fs);for(const o of ops.slice(i,i+450))o.t==="del"?b.delete(o.ref):b.set(o.ref,o.data,o.merge?{merge:true}:undefined);await b.commit()}
+  try{
+   const cnt=col=>[...new Set((groups[col]||[]).filter(x=>x&&x.id).map(x=>x.id))].filter(id=>!existing[col].has(id)).length;
+   const nC=cnt("clientes"),nL=cnt("prestamos"),nP=cnt("pagos"),cT=new Set((d.clients||[]).filter(x=>x&&x.id).map(x=>x.id)).size,act=(d.loans||[]).filter(l=>l&&l.id&&!doneL(l)).length;
+   const s=(me&&me.stats)||{},dd=prune(s.d),k=dkey(Date.now()),mv=(nC||nL||nP)?Date.now():(s.m||0);
+   if(nC||nL||nP){const x=dd[k]||[0,0,0];dd[k]=[x[0]+nC,x[1]+nL,x[2]+nP]}
+   if(s.c!==cT||s.l!==act||nC||nL||nP)await pushStats({c:cT,l:act,m:mv,d:dd});
+  }catch(e){}
  }
 };
 window.dispatchEvent(new Event("fb-ready"));
@@ -148,7 +191,6 @@ window.dispatchEvent(new Event("fb-ready"));
 const KEY="rutacobro_rd_v1",BKEY="rutacobro_rd_respaldo_previo";
 const FREQ={diario:1,semanal:7,quincenal:15,mensual:30},FL={diario:"Diario",semanal:"Semanal",quincenal:"Quincenal",mensual:"Mensual"};
 let db=empty(),view="hoy",q="",per="todo",rp="y"+new Date().getFullYear(),rd1="",rd2="";
-let lateShown=3,todayShown=30,historyShown=50,hq="";
 function empty(){return{clients:[],loans:[],payments:[],settings:{}}}
 function valid(d){return d&&typeof d==="object"&&["clients","loans","payments"].every(k=>Array.isArray(d[k]))}
 function load(){try{const d=JSON.parse(localStorage.getItem(KEY));return valid(d)?norm(d):empty()}catch(e){return empty()}}
@@ -252,27 +294,25 @@ const VIEWS={
 hoy(){
  const t=today(),act=active().sort(byDate),d=act.filter(l=>l.nextDate<=t),f=act.filter(l=>l.nextDate>t).slice(0,5);
  const cob=sum(db.payments.filter(p=>p.date===t),p=>p.interest+p.capital);
- const late=act.filter(l=>l.nextDate<t).sort((a,b)=>{const x=daysLate(b)-daysLate(a);return x||a.nextDate.localeCompare(b.nextDate)});
- const shownLate=late.slice(0,lateShown);
- const lateMore=late.length>shownLate.length;
- const banner=late.length?`<div class="alert"><b>⚠ ${late.length} ${late.length===1?"cliente atrasado":"clientes atrasados"}</b><div class="mt" style="color:var(--er)">Vencido por cobrar: ${money(sum(late,amountDue))}</div>${shownLate.map(l=>`<div class="it" data-a="editLoan" data-id="${l.id}"><div class="grow"><div class="nm">${esc(cname(l.clientId))}</div><div class="mt">Debía pagar el ${fdate(l.nextDate)}</div></div><div style="text-align:right"><b>${money(amountDue(l))}</b><div class="mt" style="color:var(--er)">${daysLate(l)} ${daysLate(l)===1?"día":"días"} tarde</div></div></div>`).join("")}${lateMore?`<div class="acts" style="margin-top:10px"><button class="btn g s" data-a="moreLate">Ver otros ${late.length-shownLate.length}</button></div>`:""}</div>`:"";
- const shownToday=d.slice(0,todayShown),todayMore=d.length>shownToday.length;
- return`${banner}<div class="grid"><div class="card"><div class="l">Por cobrar hoy</div><div class="v" style="color:var(--wn)">${money(sum(d,amountDue))}</div></div><div class="card"><div class="l">Cobrado hoy</div><div class="v" style="color:var(--ok)">${money(cob)}</div></div><div class="card"><div class="l">Atrasados</div><div class="v" style="color:var(--er)">${late.length}</div></div><div class="card"><div class="l">Dinero en la calle</div><div class="v">${money(sum(act,capLeft))}</div></div></div>
- <div class="card"><h2>Cobros de hoy</h2>${shownToday.length?shownToday.map(loanRow).join(""):(act.length?`<div class="empty">No tienes cobros pendientes hoy.</div>`:emptyBox("Aún no tienes clientes."))}${todayMore?`<div class="acts" style="margin-top:10px"><button class="btn g s" data-a="moreToday">Ver otros ${d.length-shownToday.length}</button></div>`:""}</div>
+ const late=act.filter(l=>l.nextDate<t),banner=late.length?`<div class="alert"><b>⚠ ${late.length} ${late.length===1?"cliente atrasado":"clientes atrasados"}</b><div class="mt" style="color:var(--er)">Vencido por cobrar: ${money(sum(late,amountDue))}</div>${late.map(l=>`<div class="it" data-a="editLoan" data-id="${l.id}"><div class="grow"><div class="nm">${esc(cname(l.clientId))}</div><div class="mt">Debía pagar el ${fdate(l.nextDate)}</div></div><div style="text-align:right"><b>${money(amountDue(l))}</b><div class="mt" style="color:var(--er)">${daysLate(l)} ${daysLate(l)===1?"día":"días"} tarde</div></div></div>`).join("")}</div>`:"";
+ return`${banner}<div class="grid"><div class="card"><div class="l">Por cobrar hoy</div><div class="v" style="color:var(--wn)">${money(sum(d,amountDue))}</div></div><div class="card"><div class="l">Cobrado hoy</div><div class="v" style="color:var(--ok)">${money(cob)}</div></div><div class="card"><div class="l">Atrasados</div><div class="v" style="color:var(--er)">${act.filter(l=>l.nextDate<t).length}</div></div><div class="card"><div class="l">Dinero en la calle</div><div class="v">${money(sum(act,capLeft))}</div></div></div>
+ <div class="card"><h2>Cobros de hoy</h2>${d.length?d.map(loanRow).join(""):(act.length?`<div class="empty">No tienes cobros pendientes hoy.</div>`:emptyBox("Aún no tienes clientes."))}</div>
  ${f.length?`<div class="card"><h2>Próximos cobros</h2>${f.map(loanRow).join("")}</div>`:""}`;
 },
 clientes(){
- const s=q.trim().toLocaleLowerCase("es-DO");
- const list=db.clients.filter(c=>{const n=String(c.name||"").toLocaleLowerCase("es-DO"),p=String(c.phone||"");return !s||n.startsWith(s)||p.includes(s)}).sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),"es"));
- const rows=list.map(c=>{const ls=db.loans.filter(l=>l.clientId===c.id),act=ls.filter(l=>!isDone(l)),debt=sum(act,balance);
-  return`<div class="it" data-a="ver" data-id="${c.id}"><div class="grow"><div class="nm">${esc(c.name)}</div><div class="mt">${ls.length?`${ls.length} ${ls.length===1?"préstamo":"préstamos"} · Debe ${money(debt)}`:"Sin préstamos"}</div></div>${act.length?`<span class="tag ${act.some(l=>status(l)==="Atrasado")?"t-er":"t-ok"}">${act.length} activo${act.length===1?"":"s"}</span>`:`<span class="tag t-mt">Sin deuda</span>`}</div>`}).join("");
- return`<div class="top"><h1 style="margin:0">Clientes</h1><button class="btn" data-a="nuevoCliente">+ Cliente</button></div><input id="q" placeholder="Buscar cliente por nombre o teléfono" value="${esc(q)}" style="margin-bottom:12px"><div class="card">${rows||emptyBox(s?"No se encontraron clientes.":"No hay clientes.")}</div>`;
+ const s=q.toLowerCase(),list=db.clients.filter(c=>c.name.toLowerCase().includes(s)||(c.phone||"").includes(s));
+ const rows=list.map(c=>{
+  const ls=active().filter(l=>l.clientId===c.id).sort(byDate),debt=sum(ls,balance),next=ls[0],late=ls.some(l=>status(l)==="Atrasado");
+  const summary=ls.length?`${ls.length} ${ls.length===1?"préstamo activo":"préstamos activos"} · Deuda total ${money(debt)}`:"Sin préstamos activos · Sin deuda";
+  const due=next?`Próximo pago: ${fdate(next.nextDate)} · ${late?"Atrasado":status(next)}`:"Sin pagos pendientes";
+  return`<div class="card" data-a="ver" data-id="${c.id}" style="margin-bottom:12px;cursor:pointer"><div class="nm">${esc(c.name)}</div><div class="mt" style="margin-top:4px">${summary}</div><div class="mt" style="margin-top:4px">${due}</div><div class="mt" style="font-size:12px;margin-top:8px;color:#7f8797">Toca para ver todos los préstamos</div></div>`;
+ }).join("");
+ return`<div class="top"><h1 style="margin:0">Clientes</h1><button class="btn" data-a="nuevoCliente">+ Cliente</button></div><input id="q" placeholder="Buscar por nombre o teléfono" value="${esc(q)}" style="margin-bottom:12px"><div>${rows||emptyBox("No hay clientes.")}</div>`;
 },
 historial(){
- const term=hq.trim().toLocaleLowerCase("es-DO"),ps=db.payments.filter(p=>inPer(p.date)&&(!term||String(cname(p.clientId)).toLocaleLowerCase("es-DO").startsWith(term))).sort((a,b)=>{const d=b.date.localeCompare(a.date);return d||(b.id||"").localeCompare(a.id||"")}),o=(v,l)=>`<option value="${v}" ${per===v?"selected":""}>${l}</option>`;
- const shown=ps.slice(0,historyShown),more=ps.length>shown.length;
+ const t=today(),ps=db.payments.filter(p=>inPer(p.date)).sort((a,b)=>b.date.localeCompare(a.date)),o=(v,l)=>`<option value="${v}" ${per===v?"selected":""}>${l}</option>`;
  return`<h1>Historial</h1>
- <div class="card"><select id="per" style="margin-bottom:8px">${o("hoy","Hoy")}${o("semana","Esta semana")}${o("mes","Este mes")}${o("todo","Todo el tiempo")}</select><input id="hq" placeholder="Buscar cliente por nombre" value="${esc(hq)}" style="margin-bottom:8px">${ps.length?`<div class="mt" style="margin-bottom:4px">${ps.length} ${ps.length===1?"movimiento":"movimientos"} · ${money(sum(ps,p=>p.interest+p.capital))}</div>`:""}${shown.length?shown.map(p=>`<div class="it"><div class="grow"><div class="nm" style="cursor:default">${esc(cname(p.clientId))}</div><div class="mt">${fdate(p.date)} · ${concept(p)}${p.note?" · "+esc(p.note):""}</div></div><div style="text-align:right"><b>${money(p.interest+p.capital)}</b><div class="mt">Capital ${money(p.capital)}</div><div class="mt" style="color:var(--ok)">Ganancia ${money(p.interest)}</div></div></div>`).join(""):`<div class="empty">${term?"No hay movimientos para ese cliente en este período.":"Sin movimientos en este período."}</div>`}${more?`<div class="acts" style="margin-top:10px"><button class="btn g s" data-a="moreHistory">Ver otros ${ps.length-shown.length}</button></div>`:""}</div>`;
+ <div class="card"><select id="per" style="margin-bottom:8px">${o("hoy","Hoy")}${o("semana","Esta semana")}${o("mes","Este mes")}${o("todo","Todo el tiempo")}</select>${ps.length?`<div class="mt" style="margin-bottom:4px">${ps.length} ${ps.length===1?"movimiento":"movimientos"} · ${money(sum(ps,p=>p.interest+p.capital))}</div>`:""}${ps.length?ps.slice(0,80).map(p=>`<div class="it"><div class="grow"><div class="nm" style="cursor:default">${esc(cname(p.clientId))}</div><div class="mt">${fdate(p.date)} · ${concept(p)}${p.renewal?" · Dinero nuevo "+money(p.investment||0):p.note?" · "+esc(p.note):""}</div></div><div style="text-align:right"><b>${money(p.interest+p.capital)}</b><div class="mt">Capital ${money(p.capital)}</div><div class="mt" style="color:var(--ok)">Ganancia ${money(p.interest)}</div></div></div>`).join(""):`<div class="empty">Sin movimientos en este período.</div>`}</div>`;
 },
 resumen(){
  const t=today(),cy=String(new Date().getFullYear()),yrs=new Set([cy]);
@@ -285,7 +325,7 @@ resumen(){
  else if(isY){f=Y+"-01-01";h=Y+"-12-31";pl=Y}
  else if(rp==="rango"){f=rd1||"0000-01-01";h=rd2||"9999-12-31";if(f>h){const x=f;f=h;h=x}pl=(rd1?fdate(f):"Inicio")+" – "+(rd2?fdate(h):"hoy")}
  const inR=d=>!!d&&(!f||(d>=f&&d<=h)),ps=db.payments.filter(p=>inR(p.date)),cap=sum(ps,p=>p.capital),gan=sum(ps,p=>p.interest);
- const inv=sum(db.loans.filter(l=>inR(l.startDate)),l=>l.capital),act=active(),late=act.filter(l=>l.nextDate<t),calle=sum(act,capLeft);
+ const inv=sum(db.loans.filter(l=>inR(l.startDate)),l=>l.capital)+sum(db.loans.flatMap(l=>(l.renewals||[]).filter(x=>inR(x.date))),x=>x.capital),act=active(),late=act.filter(l=>l.nextDate<t),calle=sum(act,capLeft);
  const ganPend=sum(act.filter(l=>l.type==="c"),l=>Math.max(r2(l.total-l.paid-capLeft(l)),0));
  const MN=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"],rows=[],mrow=(lb,k)=>{const m=db.payments.filter(p=>p.date.slice(0,7)===k),c=sum(m,p=>p.capital),g=sum(m,p=>p.interest);return`<tr><td>${lb}</td><td><b>${money(c+g)}</b></td><td>${money(c)}</td><td style="color:var(--ok)">${money(g)}</td></tr>`};
  if(isY){for(let m=0;m<12;m++){const k=Y+"-"+pad(m+1);rows.push(k>t.slice(0,7)?`<tr><td>${MN[m]}</td><td class="mt">—</td><td class="mt">—</td><td class="mt">—</td></tr>`:mrow(MN[m],k))}}
@@ -303,7 +343,7 @@ resumen(){
  <div class="card"><h2>${isY?"Por mes · "+Y:"Últimos 6 meses"}</h2><table><tr><th>Mes</th><th>Recaudado</th><th>Capital</th><th>Ganancia</th></tr>${rows.join("")}</table></div>`;
 },
 ajustes(){
- return`<h1>Ajustes</h1><div class="card"><h2>Copia de seguridad</h2><p class="mt">Descarga un archivo de Excel con tus clientes, préstamos y pagos.</p><div class="acts" style="margin-top:14px"><button class="btn" data-a="exportar">Descargar copia de seguridad</button></div></div><div class="card" style="margin-top:14px"><h2>Mi cuenta</h2><p class="mt">${esc(((window.FB&&FB.me)||{}).email||"")}</p><p class="mt">Mi código: <b>${esc(((window.FB&&FB.me)||{}).code||"")}</b></p><p class="mt">${memText()}</p><div class="acts" style="margin-top:14px"><button class="btn" data-a="plan">Pagar membresía</button><button class="btn g" data-a="soporte">Soporte</button><button class="btn g" data-a="salir">Cerrar sesión</button><button class="btn d" data-a="eliminarCuenta">Eliminar mi cuenta</button></div></div>`;
+ return`<h1>Ajustes</h1><div class="card"><h2>Copia de seguridad</h2><p class="mt">Descarga un archivo de Excel con tus clientes, préstamos y pagos.</p><div class="acts" style="margin-top:14px"><button class="btn" data-a="exportar">Descargar copia de seguridad</button></div></div><div class="card" style="margin-top:14px"><h2>Mi cuenta</h2><p class="mt">${esc(((window.FB&&FB.me)||{}).email||"")}</p><p class="mt">Mi código: <b>${esc(((window.FB&&FB.me)||{}).code||"")}</b></p><p class="mt">${memText()}</p><div class="acts" style="margin-top:14px"><button class="btn" data-a="plan">Pagar membresía</button><button class="btn g" data-a="soporte">Soporte</button><button class="btn g" data-a="salir">Cerrar sesión</button></div></div>`;
 }};
 const NAV=[["hoy","Hoy"],["clientes","Clientes"],["historial","Historial"],["resumen","Resumen"],["ajustes","Ajustes"]];
 function render(){
@@ -311,55 +351,61 @@ function render(){
  $("#nav").innerHTML=NAV.map(([k,l])=>`<button data-a="go" data-id="${k}" class="${view===k?"on":""}">${l}${k==="hoy"&&nl?`<span class="bdg">${nl}</span>`:""}</button>`).join("");
  document.body.classList.toggle("ro",locked());$("#app").innerHTML=banner()+VIEWS[view]();
  const i=$("#q");if(i)i.oninput=e=>{q=e.target.value;const p=e.target.selectionStart;render();const n=$("#q");n.focus();n.setSelectionRange(p,p)};
- const p=$("#per");if(p)p.onchange=e=>{per=e.target.value;historyShown=50;render()};
- const hi=$("#hq");if(hi)hi.oninput=e=>{hq=e.target.value;historyShown=50;const p=e.target.selectionStart;render();const n=$("#hq");n.focus();n.setSelectionRange(p,p)};
+ const p=$("#per");if(p)p.onchange=e=>{per=e.target.value;render()};
  const rs=$("#rp");if(rs)rs.onchange=e=>{rp=e.target.value;render()};
  const d1=$("#rd1");if(d1)d1.onchange=e=>{rd1=e.target.value;render()};const d2=$("#rd2");if(d2)d2.onchange=e=>{rd2=e.target.value;render()};
 }
 function go(v){view=v;render();window.scrollTo(0,0)}
 
+/* ===== VALIDACIÓN ===== */
+function clearErrors(fm){fm.querySelectorAll(".field-error").forEach(x=>x.remove());fm.querySelectorAll(".invalid").forEach(x=>x.classList.remove("invalid"))}
+function fieldError(input,msg){if(!input)return;input.classList.add("invalid");const d=document.createElement("div");d.className="field-error";d.textContent=msg;input.insertAdjacentElement("afterend",d)}
+function finishValidation(fm,items){clearErrors(fm);let first=null;for(const [el,msg] of items){if(!el||!msg)continue;fieldError(el,msg);if(!first)first=el}if(first){first.scrollIntoView({behavior:"smooth",block:"center"});first.focus({preventScroll:true});return false}return true}
 /* ===== FORMULARIOS ===== */
 const num=v=>v===""||v==null?0:Number(v);
 const freqSel=(v)=>Object.entries(FL).map(([k,n])=>`<option value="${k}" ${k===v?"selected":""}>${n}</option>`).join("");
-const loanFields=()=>`<div><label>Tipo de préstamo</label><select name="t"><option value="r">A rédito (se cobra un rédito cada período)</option><option value="c">A cuotas (se paga en cuotas fijas)</option></select></div>
-<div><label>Monto prestado (RD$)</label><input name="cap" type="number" step="0.01" min="0" inputmode="decimal"></div>
-<div class="f2 tr"><div><label>Rédito por pago (RD$)</label><input name="fee" type="number" step="0.01" min="0" inputmode="decimal"></div><div><label>o en porcentaje (%)</label><input name="rp" type="number" step="0.01" min="0" inputmode="decimal" value="20"></div></div>
-<div class="f2 tc" hidden><div><label>Ganancia total (%)</label><input name="pct" type="number" step="0.01" min="0" inputmode="decimal" value="20"></div><div><label>Número de pagos</label><input name="n" type="number" step="1" min="1" inputmode="numeric"></div></div>
-<div class="f2"><div><label>Cobro</label><select name="freq">${freqSel("quincenal")}</select></div><div><label>Fecha de entrega</label><input name="date" type="date" value="${today()}"></div></div><div class="f2"><div class="wdw" hidden><label>Día de cobro</label><select name="wd">${["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"].map((n,i)=>`<option value="${i}" ${i===5?"selected":""}>${n}</option>`).join("")}</select></div><div><label>Primer cobro</label><input name="first" type="date"></div></div><div class="mt" id="fh"></div><div class="live" id="lv" hidden></div>`;
+const loanFields=()=>`<div><label>Tipo de préstamo *</label><select name="t"><option value="">Selecciona</option><option value="r">A rédito</option><option value="c">A cuotas</option></select></div>
+<div><label>Monto prestado (RD$) *</label><input name="cap" type="number" step="0.01" min="0" inputmode="decimal"></div>
+<div class="f2 tr"><div><label>Rédito por cobro (RD$) *</label><input name="fee" type="number" step="0.01" min="0" inputmode="decimal"></div><div><label>Rédito (%) *</label><input name="rp" type="number" step="0.01" min="0" inputmode="decimal"></div></div>
+<div class="f2 tc" hidden><div><label>Ganancia total (%) *</label><input name="pct" type="number" step="0.01" min="0" inputmode="decimal"></div><div><label>Número de cuotas *</label><input name="n" type="number" step="1" min="1" inputmode="numeric"></div></div>
+<div class="f2"><div><label>Cobro *</label><select name="freq"><option value="">Selecciona</option>${freqSel("")}</select></div><div><label>Fecha de entrega *</label><input name="date" type="date"></div></div><div class="f2"><div class="wdw" hidden><label>Día de cobro *</label><select name="wd"><option value="">Selecciona</option>${["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"].map((n,i)=>`<option value="${i}">${n}</option>`).join("")}</select></div><div><label>Primer cobro *</label><input name="first" type="date"></div></div><div class="live" id="lv" hidden></div>`;
 function bindLoan(fm){
  const upd=()=>{const t=fm.t.value;fm.querySelectorAll(".tr").forEach(e=>e.hidden=t!=="r");fm.querySelectorAll(".tc").forEach(e=>e.hidden=t!=="c");
   const cap=num(fm.cap.value),lv=fm.querySelector("#lv");lv.hidden=!(cap>0);
-  if(t==="c"){const tot=r2(cap*(1+num(fm.pct.value)/100)),n=Math.max(parseInt(fm.n.value)||0,1);lv.innerHTML=`<div><span>Total a pagar</span><b>${money(tot)}</b></div><div><span>Cada cuota</span><b>${money(tot/n)}</b></div><div><span>Ganancia</span><b>${money(tot-cap)}</b></div>`}
-  else lv.innerHTML=`<div><span>Rédito cada ${fm.freq.value==="mensual"?"mes":"cobro"}</span><b>${money(num(fm.fee.value))}</b></div><div><span>Capital pendiente</span><b>${money(cap)}</b></div>`};
+  if(t==="c"){const tot=r2(cap*(1+num(fm.pct.value)/100)),n=parseInt(fm.n.value)||0;lv.innerHTML=`<div><span>Total a pagar</span><b>${money(tot)}</b></div><div><span>Cada cuota</span><b>${n?money(tot/n):"-"}</b></div><div><span>Ganancia</span><b>${money(tot-cap)}</b></div>`}
+  else if(t==="r")lv.innerHTML=`<div><span>Rédito por cobro</span><b>${money(num(fm.fee.value))}</b></div><div><span>Capital pendiente</span><b>${money(cap)}</b></div>`;else lv.innerHTML=""};
  fm.addEventListener("input",e=>{const cap=num(fm.cap.value);
-  if(e.target.name==="fee"&&cap>0)fm.rp.value=r2(num(fm.fee.value)/cap*100);
-  if(e.target.name==="rp"&&cap>0)fm.fee.value=r2(cap*num(fm.rp.value)/100);
-  if(e.target.name==="cap"&&num(fm.rp.value)>0&&e.target.name==="cap")fm.fee.value=r2(cap*num(fm.rp.value)/100);upd()});
- const HT={diario:"Se cobra todos los días.",semanal:"Se cobra cada semana el día que escojas.",quincenal:"Se cobra los días 15 y 30 de cada mes.",mensual:"Se cobra el mismo día de cada mes."};
- let manual=false;
- const sug=()=>{fm.querySelector(".wdw").hidden=fm.freq.value!=="semanal";fm.querySelector("#fh").textContent=HT[fm.freq.value];if(!manual)fm.first.value=firstDue(fm.freq.value,fm.date.value||today(),+fm.wd.value)};
- fm.addEventListener("input",e=>{if(e.target.name==="first")manual=true;else if(["freq","date","wd"].includes(e.target.name))sug()});
- fm.t.onchange=upd;upd();sug();
+  if(e.target.name==="fee"&&cap>0&&e.target.value!=="")fm.rp.value=r2(num(fm.fee.value)/cap*100);
+  if(e.target.name==="rp"&&cap>0&&e.target.value!=="")fm.fee.value=r2(cap*num(fm.rp.value)/100);
+  if(e.target.name==="cap"&&num(fm.rp.value)>0)fm.fee.value=r2(cap*num(fm.rp.value)/100);upd()});
+ const sug=()=>{fm.querySelector(".wdw").hidden=fm.freq.value!=="semanal"};
+ fm.addEventListener("change",e=>{if(["freq"].includes(e.target.name))sug();if(e.target.name==="t")upd()});
+ upd();sug();
 }
 function readLoan(fm,required){
- const t=fm.t.value,cap=num(fm.cap.value);
- if(!fm.cap.value&&!required)return null;
- if(!(cap>0)){toast("Escribe el monto prestado");return false}
- const o={t,cap,freq:fm.freq.value,date:fm.date.value||today(),wd:+fm.wd.value,first:fm.first.value};
- if(!o.first){toast("Escribe la fecha del primer cobro");return false}
- if(t==="r"){o.fee=num(fm.fee.value);if(!(o.fee>0)){toast("Escribe el rédito que va a cobrar");return false}}
- else{o.pct=num(fm.pct.value);o.n=num(fm.n.value);if(!(o.pct>=0)||!Number.isInteger(o.n)||o.n<1){toast("Escribe la ganancia (%) y el número de pagos");return false}}
+ const t=fm.t.value,cap=num(fm.cap.value),items=[];
+ if(!t)items.push([fm.t,"Selecciona el tipo"]);
+ if(!(cap>0)||!fm.cap.value)items.push([fm.cap,"Monto obligatorio"]);
+ if(!fm.freq.value)items.push([fm.freq,"Selecciona el cobro"]);
+ if(!fm.date.value)items.push([fm.date,"Fecha obligatoria"]);
+ if(!fm.first.value)items.push([fm.first,"Fecha obligatoria"]);
+ if(t==="r"){const feeEmpty=fm.fee.value==="",rpEmpty=fm.rp.value==="";if(feeEmpty&&rpEmpty){items.push([fm.fee,"Escribe rédito o %"])}else if(!feeEmpty&&!(num(fm.fee.value)>0)){items.push([fm.fee,"Rédito inválido"])}else if(!rpEmpty&&!(num(fm.rp.value)>0)){items.push([fm.rp,"% inválido"])}else if(!feeEmpty&&rpEmpty&&cap>0)fm.rp.value=r2(num(fm.fee.value)/cap*100);else if(feeEmpty&&!rpEmpty&&cap>0)fm.fee.value=r2(cap*num(fm.rp.value)/100);
+ }else if(t==="c"){if(fm.pct.value===""||!(num(fm.pct.value)>=0))items.push([fm.pct,"% obligatorio"]);if(fm.n.value===""||!Number.isInteger(Number(fm.n.value))||Number(fm.n.value)<1)items.push([fm.n,"Cuotas obligatorias"]);}
+ if(t==="semanal"&&!fm.wd.value)items.push([fm.wd,"Selecciona el día"]);
+ if(!finishValidation(fm,items))return false;
+ const o={t,cap,freq:fm.freq.value,date:fm.date.value,wd:fm.wd.value===""?null:+fm.wd.value,first:fm.first.value};
+ if(t==="r")o.fee=r2(num(fm.fee.value));else{o.pct=r2(num(fm.pct.value));o.n=Number(fm.n.value)}
  return o;
 }
 function clientForm(id){
  const c=id?client(id):{name:"",phone:"",ref:""};
- openModal(`<h2>${id?"Editar cliente":"Nuevo cliente"}</h2><form class="f" id="fm"><div><label>Nombre *</label><input name="name" required value="${esc(c.name)}"></div><div class="f2"><div><label>Teléfono (WhatsApp)</label><input name="phone" type="tel" value="${esc(c.phone)}"></div><div><label>Referencia / dirección</label><input name="ref" value="${esc(c.ref)}"></div></div>${id?"":`<div class="sep">Préstamo (puedes dejarlo en blanco y prestar después)</div>${loanFields()}`}<div class="mf"><button type="button" class="btn g" data-close>Cancelar</button><button class="btn">Guardar</button></div></form>`);
+ openModal(`<h2>${id?"Editar cliente":"Nuevo cliente"}</h2><form class="f" id="fm"><div><label>Nombre *</label><input name="name" value="${esc(c.name)}"></div><div class="f2"><div><label>Teléfono (WhatsApp) *</label><input name="phone" type="tel" inputmode="numeric" value="${esc(c.phone)}"></div><div><label>Referencia *</label><input name="ref" value="${esc(c.ref)}"></div></div>${id?"":`<div class="sep">Préstamo *</div>${loanFields()}`}<div class="mf"><button type="button" class="btn g" data-close>Cancelar</button><button class="btn">Guardar</button></div></form>`);
  const fm=$("#fm");if(!id)bindLoan(fm);
- fm.onsubmit=e=>{e.preventDefault();const name=fm.elements.name.value.trim();if(!name)return toast("Escribe el nombre");
-  let ln=null;if(!id){ln=readLoan(fm,false);if(ln===false)return}
-  const o={name,phone:fm.phone.value.trim(),ref:fm.ref.value.trim()};
-  if(id)Object.assign(c,o);else{const n={id:uid(),note:"",...o};db.clients.push(n);if(ln)newLoan(n.id,ln)}
-  save();closeModal();render();toast("Guardado")};
+ fm.onsubmit=e=>{e.preventDefault();const digits=fm.phone.value.replace(/\D/g,"");const items=[];if(!fm.name.value.trim())items.push([fm.name,"Nombre obligatorio"]);if(digits.length!==10)items.push([fm.phone,"Teléfono: 10 dígitos"]);if(!fm.ref.value.trim())items.push([fm.ref,"Referencia obligatoria"]);if(!finishValidation(fm,items))return;
+  let ln=null;if(!id){ln=readLoan(fm,true);if(ln===false)return}
+  const o={name:fm.name.value.trim(),phone:digits,ref:fm.ref.value.trim()};
+  if(id)Object.assign(c,o);else{const n={id:uid(),note:"",...o};db.clients.push(n);newLoan(n.id,ln)}
+  save();closeModal();render();toast(id?"Cliente actualizado":"Cliente y préstamo guardados")};
 }
 function prestar(cid){
  openModal(`<h2>Nuevo préstamo</h2><p class="mt" style="margin-bottom:10px">${esc(cname(cid))}</p><form class="f" id="fm">${loanFields()}<div class="mf"><button type="button" class="btn g" data-close>Cancelar</button><button class="btn">Guardar préstamo</button></div></form>`);
@@ -368,7 +414,7 @@ function prestar(cid){
 }
 function editLoan(id){
  const l=loan(id),hasPay=db.payments.some(p=>p.loanId===id),isC=l.type==="c",curPct=isC?r2((l.total/l.capital-1)*100):0;
- openModal(`<h2>Editar préstamo</h2><p class="mt" style="margin-bottom:10px">${esc(cname(l.clientId))}</p>${hasPay?`<p class="mt" style="margin-bottom:10px;color:var(--wn)">Este préstamo ya tiene pagos. Lo ya pagado se mantiene y se recalcula lo que debe. El tipo de préstamo no se puede cambiar.</p>`:""}<form class="f" id="fm">${loanFields().replace("Primer cobro","Próximo cobro")}<div class="mf"><button type="button" class="btn g" data-close>Cancelar</button><button type="button" class="btn g" data-a="ver" data-id="${l.clientId}">Ver cliente</button><button type="button" class="btn d" data-a="eliminarPrestamo" data-id="${l.id}">Eliminar préstamo</button><button class="btn">Guardar</button></div></form>`);
+ openModal(`<h2>Editar préstamo</h2><p class="mt" style="margin-bottom:10px">${esc(cname(l.clientId))}</p>${hasPay?`<p class="mt" style="margin-bottom:10px;color:var(--wn)">Este préstamo ya tiene pagos. Lo ya pagado se mantiene y se recalcula lo que debe. El tipo de préstamo no se puede cambiar.</p>`:""}<form class="f" id="fm">${loanFields().replace("Primer cobro","Próximo cobro")}<div class="mf"><button type="button" class="btn g" data-close>Cancelar</button><button type="button" class="btn g" data-a="ver" data-id="${l.clientId}">Ver cliente</button><button class="btn">Guardar</button></div></form>`);
  const fm=$("#fm");
  fm.t.value=l.type;if(hasPay)fm.t.disabled=true;
  fm.cap.value=l.capital;
@@ -398,37 +444,32 @@ function editLoan(id){
   l.freq=o.freq;l.startDate=o.date;l.nextDate=o.first;l.dom=parts(o.date)[2];l.wd=o.wd;
   save();closeModal();render();toast("Guardado")};
 }
-function eliminarPrestamo(id){
- const l=loan(id);if(!l)return;
- const c=client(l.clientId),np=db.payments.filter(p=>p.loanId===id).length;
- confirmBox(`¿Eliminar este préstamo de <b>${esc(c?.name||"")}</b>? Se eliminarán también sus ${np} movimiento(s) asociados. El cliente y sus otros préstamos no se tocarán. Esta acción no se puede deshacer.`,()=>{
-  db.loans=db.loans.filter(x=>x.id!==id);db.payments=db.payments.filter(p=>p.loanId!==id);
-  save();closeModal();render();toast("Préstamo eliminado")
- },"Sí, eliminar préstamo");
-}
 function cobrar(id){
  const l=loan(id),isC=l.type==="c",d0=amountDue(l);
  const opts=isC?[["c","Pago de cuota"],["r","Pago de rédito"],["a","Avance a préstamo"],["o","Otro monto"]]:[["r","Pago de rédito"],["a","Avance a préstamo (abono a capital)"],["m","Rédito + avance"]];
- const hints={c:"Paga la cuota que toca.",r:"Pone al cliente al día pero sigue debiendo lo mismo.",a:"Se rebaja de lo que debe.",o:"Pago de otro monto: se aplica a las cuotas.",m:"Paga el rédito y además baja lo que debe."};
  openModal(`<h2>Cobrar a ${esc(cname(l.clientId))}</h2><div class="big"><div><div class="l">Debe</div><b>${money(balance(l))}</b></div><div><div class="l">${isC?`Cuota ${Math.min(l.k+1,l.n)} de ${l.n}`:"Rédito acordado"}</div><b>${money(d0)}</b></div><div>${tagL(l)}<div class="mt">${fdate(l.nextDate)}</div></div></div>
- <form class="f" id="fm"><div><label>Tipo de pago</label><select name="tp">${opts.map(([k,n])=>`<option value="${k}">${n}</option>`).join("")}</select><div class="mt" id="hint" style="margin-top:4px"></div></div>
- ${isC?`<div><label>Monto recibido (RD$)</label><input name="i" type="number" step="0.01" min="0" inputmode="decimal" value="${d0}"></div>`:`<div class="f2"><div><label>Rédito (RD$)</label><input name="i" type="number" step="0.01" min="0" inputmode="decimal" value="${d0}"></div><div><label>Avance (RD$)</label><input name="c" type="number" step="0.01" min="0" inputmode="decimal" value="0"></div></div>`}
- <div class="f2"><div><label>Fecha</label><input name="date" type="date" value="${today()}"></div><div><label>Nota</label><input name="note" placeholder="Efectivo, parcial…"></div></div>
+ <form class="f" id="fm"><div><label>Tipo de pago *</label><select name="tp">${opts.map(([k,n])=>`<option value="${k}">${n}</option>`).join("")}</select></div>
+ ${isC?`<div><label>Monto recibido (RD$) *</label><input name="i" type="number" step="0.01" min="0" inputmode="decimal" value="${d0}"></div>`:`<div class="f2"><div><label>Rédito (RD$) *</label><input name="i" type="number" step="0.01" min="0" inputmode="decimal" value="${d0}"></div><div><label>Avance (RD$) *</label><input name="c" type="number" step="0.01" min="0" inputmode="decimal" value="0"></div></div>`}
+ <div class="f2"><div><label>Fecha *</label><input name="date" type="date"></div><div><label>Nota</label><input name="note"></div></div>
  <div class="live" id="lv"></div><div class="mf"><button type="button" class="btn g" data-close>Cancelar</button><button class="btn" id="sv">Guardar cobro</button></div></form>`);
  const fm=$("#fm"),kind=()=>fm.tp.value;
  const vals=()=>({i:num(fm.i.value),c:isC?0:num(fm.c.value)});
- const sim=()=>{const{i,c}=vals(),k=kind(),s={...l},ok=isFinite(i)&&isFinite(c)&&i>=0&&c>=0&&i+c>0&&(isC?(k==="r"?l.gan>0:i<=balance(l)+EPS):c<=l.principal+EPS);
-  if(ok)apply(s,i,c,k);return{ok,s,i,c}};
- const calc=()=>{const{ok,s,i,c}=sim(),done=ok&&isDone(s);
-  $("#hint").textContent=hints[kind()];
-  $("#lv").innerHTML=`<div><span>Total recibido</span><b>${money(i+c)}</b></div><div><span>Quedará debiendo</span><b>${ok?money(balance(s)):"-"}</b></div>`+(isC?`<div><span>Cuotas que faltan</span><b>${ok?(s.n-s.k)+" de "+s.n:"-"}</b></div><div><span>Próxima cuota</span><b>${ok&&!done?money(amountDue(s)):"-"}</b></div>`:`<div><span>Próximo rédito</span><b>${ok?money(s.fee):"-"}</b></div>`)+`<div><span>Próximo cobro</span><b>${!ok?"-":done?"Liquidado":fdate(s.nextDate)}</b></div>`+(!ok&&(i+c)>0?`<div style="color:var(--er)">El monto no es válido o es mayor que lo que debe.</div>`:"");
-  $("#sv").disabled=!ok};
- fm.tp.onchange=()=>{const t=kind();
-  if(isC){fm.i.value=t==="c"?d0:t==="r"?l.gan:""}
-  else if(t==="r"){fm.i.value=d0;fm.c.value=0}else if(t==="a"){fm.i.value=0;fm.c.value=""}else{fm.i.value=d0;fm.c.value=""}calc()};
- fm.addEventListener("input",calc);calc();
- fm.onsubmit=e=>{e.preventDefault();const r=sim();if(!r.ok)return toast("Revisa el monto: no puede ser mayor que lo que debe");
-  const p=pay(l,fm.date.value||today(),r2(r.i),r2(r.c),fm.note.value.trim(),kind());render();receiptModal(p,"Cobro guardado")};
+ const sim=()=>{const{i,c}=vals(),k=kind(),s={...l},ok=fm.i.value!==""&&(!isC?fm.c.value!=="":true)&&isFinite(i)&&isFinite(c)&&i>=0&&c>=0&&i+c>0&&(isC?(k==="r"?l.gan>0:i<=balance(l)+EPS):c<=l.principal+EPS);if(ok)apply(s,i,c,k);return{ok,s,i,c}};
+ const calc=()=>{const{ok,s,i,c}=sim(),done=ok&&isDone(s);$("#lv").innerHTML=`<div><span>Total recibido</span><b>${money(i+c)}</b></div><div><span>Quedará debiendo</span><b>${ok?money(balance(s)):"-"}</b></div>`+(isC?`<div><span>Cuotas que faltan</span><b>${ok?(s.n-s.k)+" de "+s.n:"-"}</b></div>`:`<div><span>Próximo rédito</span><b>${ok?money(s.fee):"-"}</b></div>`)+`<div><span>Próximo cobro</span><b>${!ok?"-":done?"Liquidado":fdate(s.nextDate)}</b></div>`;$("#sv").disabled=!ok};
+ fm.addEventListener("input",calc);fm.tp.onchange=calc;calc();
+ fm.onsubmit=e=>{e.preventDefault();const{i,c}=vals(),items=[];if(fm.i.value==="")items.push([fm.i,"Monto obligatorio"]);if(!isC&&fm.c.value==="")items.push([fm.c,"Avance obligatorio (puede ser 0)"]);if(fm.date.value==="")items.push([fm.date,"Fecha obligatoria"]);if(!finishValidation(fm,items))return;const r=sim();if(!r.ok){toast("El monto no es válido");return}const p=pay(l,fm.date.value,r2(r.i),r2(r.c),fm.note.value.trim(),kind());render();receiptModal(p,"Cobro guardado")};
+}
+function renovar(id){
+ const l=loan(id),c=client(l.clientId);if(!l||!c||isDone(l))return toast("Este préstamo no está activo");
+ openModal(`<h2>Renovar préstamo</h2><p class="mt">${esc(c.name)} · se mantiene el próximo cobro: ${fdate(l.nextDate)}</p><form class="f" id="fm"><div><label>Dinero nuevo que entrego (RD$) *</label><input name="newMoney" type="number" step="0.01" min="0" inputmode="decimal"></div><div><label>% de ganancia del monto nuevo *</label><input name="pct" type="number" step="0.01" min="0" inputmode="decimal"></div><div><label>Número de cuotas *</label><input name="n" type="number" step="1" min="1" inputmode="numeric"></div><div><label>Fecha de renovación *</label><input name="date" type="date"></div><div class="live"><div><span>Debe actual</span><b>${money(balance(l))}</b></div><div><span>Nuevo capital</span><b id="rvCap">-</b></div><div><span>Nuevo total</span><b id="rvTot">-</b></div></div><div class="mf"><button type="button" class="btn g" data-close>Cancelar</button><button class="btn" id="rvSave">Renovar</button></div></form>`);
+ const fm=$("#fm"),upd=()=>{const nm=num(fm.newMoney.value),pct=num(fm.pct.value),n=parseInt(fm.n.value)||0,old=balance(l),gain=r2(nm*pct/100),tot=l.type==="c"?r2(old+nm+gain):r2(old+nm);$("#rvCap").textContent=money(l.type==="c"?capLeft(l)+nm:(l.principal+nm));$("#rvTot").textContent=l.type==="c"&&n?money(tot)+" · "+money(tot/n)+" por cuota":money(tot)};
+ fm.addEventListener("input",upd);upd();
+ fm.onsubmit=e=>{e.preventDefault();const items=[];if(!(num(fm.newMoney.value)>0))items.push([fm.newMoney,"Dinero nuevo obligatorio"]);if(fm.pct.value===""||num(fm.pct.value)<0)items.push([fm.pct,"% obligatorio"]);if(fm.n.value===""||!Number.isInteger(Number(fm.n.value))||Number(fm.n.value)<1)items.push([fm.n,"Cuotas obligatorias"]);if(!fm.date.value)items.push([fm.date,"Fecha obligatoria"]);if(!finishValidation(fm,items))return;
+  const nm=r2(num(fm.newMoney.value)),pct=r2(num(fm.pct.value)),n=Number(fm.n.value),oldBalance=balance(l),gain=r2(nm*pct/100),oldNext=l.nextDate,renewDate=fm.date.value;
+  if(l.type==="c"){const total=r2(oldBalance+nm+gain),newCap=r2(capLeft(l)+nm);Object.assign(l,{capital:newCap,total,cu:r2(total/n),gan:r2((total-newCap)/n),n,paid:0,k:0,credit:0,capPaid:0,pct:r2((total/newCap-1)*100),startDate:renewDate,nextDate:oldNext,dom:parts(renewDate)[2],wd:l.wd});}
+  else{const newPrincipal=r2(l.principal+nm),newFee=r2(l.fee+gain);Object.assign(l,{capital:r2(l.capital+nm),principal:newPrincipal,fee:newFee,rate:r2(newFee/newPrincipal*100),startDate:renewDate,nextDate:oldNext,dom:parts(renewDate)[2],wd:l.wd,credit:l.credit||0,capPaid:l.capPaid||0});}
+  l.renewals=[...(l.renewals||[]),{date:renewDate,capital:nm,pct}];db.payments.push({id:uid(),loanId:l.id,clientId:l.clientId,date:renewDate,interest:0,capital:0,type:"Renovación",note:"Dinero nuevo entregado en renovación",investment:nm,bal:balance(l),next:l.nextDate,renewal:true});
+  save();closeModal();render();toast("Préstamo renovado")};
 }
 /* ===== RECIBO POR WHATSAPP (enlace wa.me: abre el chat del cliente con el mensaje listo) ===== */
 const concept=p=>({"Cuota":"Pago de cuota","Rédito":"Pago de rédito","Mixto":"Pago de rédito + avance a préstamo"}[p.type]||p.type);
@@ -438,10 +479,17 @@ function eliminarCliente(id){
   db.clients=db.clients.filter(x=>x.id!==id);db.loans=db.loans.filter(l=>l.clientId!==id);db.payments=db.payments.filter(p=>p.clientId!==id);
   save();render();toast("Cliente eliminado")},"Sí, eliminar");
 }
+function eliminarPrestamo(id){
+ const l=loan(id),c=client(l.clientId),np=db.payments.filter(p=>p.loanId===id).length;
+ confirmBox(`¿Eliminar este préstamo de <b>${esc(c?c.name:"")}</b>? Se eliminarán también sus ${np} movimiento(s) asociados. El cliente y sus demás préstamos no se eliminarán. No se puede deshacer.`,()=>{
+  db.loans=db.loans.filter(x=>x.id!==id);db.payments=db.payments.filter(p=>p.loanId!==id);
+  save();closeModal();render();toast("Préstamo eliminado")},"Sí, eliminar préstamo");
+}
 function phoneWa(ph){const d=String(ph||"").replace(/\D/g,"");if(d.length===10)return"1"+d;if(d.length===11&&d[0]==="1")return d;return d.length>11?d:""}
 function receiptText(p){
  const c=client(p.clientId);
  const L=["*Recibo de pago - "+(c?c.name:"")+"*","","Fecha: "+fdate(p.date),"Concepto: "+concept(p)];
+ if(p.renewal)L.push("Dinero nuevo entregado: "+money(p.investment||0));
  if(p.type==="Mixto")L.push("Rédito: "+money(p.interest),"Avance: "+money(p.capital));
  L.push("","Monto recibido: *"+money(p.interest+p.capital)+"*");
  if(p.bal!=null)L.push("","Balance pendiente: *"+money(p.bal)+"*");
@@ -455,14 +503,14 @@ function receiptModal(p,title){
  openModal(`<h2>${title||"Recibo"}</h2><pre style="white-space:pre-wrap;font:inherit;font-size:14px;background:#050b16;border:1px solid var(--bd);border-radius:12px;padding:12px">${esc(t)}</pre>${n?`<p class="mt" style="margin-top:8px">Se enviará al WhatsApp de ${esc(c.name)} (+${n}).</p>`:`<p class="mt" style="margin-top:8px;color:var(--wn)">Este cliente no tiene un teléfono válido guardado. WhatsApp te dejará escoger el contacto.</p>`}<div class="mf"><button class="btn g" data-close>Cerrar</button><a class="btn" href="${esc(url)}" target="_blank" rel="noopener" style="text-decoration:none;display:inline-block">Enviar por WhatsApp</a></div>`);
 }
 function ver(cid){
- const c=client(cid),ls=db.loans.filter(l=>l.clientId===cid),ps=db.payments.filter(p=>p.clientId===cid).sort((a,b)=>b.date.localeCompare(a.date));
+ const c=client(cid),ls=db.loans.filter(l=>l.clientId===cid).sort(byDate),ps=db.payments.filter(p=>p.clientId===cid).sort((a,b)=>b.date.localeCompare(a.date));
  openModal(`<h2>${esc(c.name)}</h2><div class="mt">${esc(c.phone||"Sin teléfono")} · ${esc(c.ref||"Sin referencia")}</div>
- <div class="grid" style="margin-top:12px"><div class="card"><div class="l">Debe</div><div class="v">${money(sum(ls,balance))}</div></div><div class="card"><div class="l">Ganancia cobrada</div><div class="v">${money(sum(ps,p=>p.interest))}</div></div></div>
- ${ls.map(l=>`<div class="it"><div class="grow"><div>${money(l.capital)} · ${desc(l)} · ${FL[l.freq].toLowerCase()}</div><div class="mt">Debe ${money(balance(l))} ${tagL(l)}</div></div><button class="btn s g" data-a="editLoan" data-id="${l.id}">Editar</button></div>`).join("")}
+ <div class="grid" style="margin-top:12px"><div class="card"><div class="l">Debe</div><div class="v">${money(sum(active().filter(l=>l.clientId===cid),balance))}</div></div><div class="card"><div class="l">Préstamos</div><div class="v">${ls.length}</div></div><div class="card"><div class="l">Ganancia cobrada</div><div class="v">${money(sum(ps,p=>p.interest))}</div></div></div>
+ <h2 style="margin-top:14px">Préstamos</h2>
+ ${ls.length?ls.map(l=>`<div class="it"><div class="grow"><div><b>${money(l.capital)}</b> · ${desc(l)} · ${FL[l.freq].toLowerCase()}</div><div class="mt">Debe ${money(balance(l))} · ${isDone(l)?"Liquidado":`${fdate(l.nextDate)} · ${status(l)}`}</div></div><div class="acts"><button class="btn s g" data-a="editLoan" data-id="${l.id}">Editar</button>${isDone(l)?"":`<button class="btn s" data-a="cobrar" data-id="${l.id}">Cobrar</button><button class="btn s g" data-a="renovar" data-id="${l.id}">Renovar</button>`}<button class="btn s d" data-a="eliminarPrestamo" data-id="${l.id}">Eliminar</button></div></div>`).join(""):`<div class="empty">Este cliente todavía no tiene préstamos.</div>`}
  <h2 style="margin-top:14px">Movimientos</h2>${ps.length?ps.map(p=>`<div class="it"><div class="grow"><div>${fdate(p.date)} · ${concept(p)}</div><div class="mt">${esc(p.note||"")}</div></div><div style="text-align:right"><b>${money(p.interest+p.capital)}</b><div class="mt">Capital ${money(p.capital)}</div><div class="mt" style="color:var(--ok)">Ganancia ${money(p.interest)}</div></div><button class="btn s g" data-a="recibo" data-id="${p.id}">Recibo</button></div>`).join(""):`<div class="mt">Sin movimientos.</div>`}
  <div class="mf"><button class="btn g" data-close>Cerrar</button><button class="btn g" data-a="editCliente" data-id="${cid}">Editar datos</button><button class="btn" data-a="prestar" data-id="${cid}">Nuevo préstamo</button></div><div class="mf" style="margin-top:6px"><button class="btn s d" data-a="eliminarCliente" data-id="${cid}">Eliminar cliente</button></div>`);
 }
-
 /* ===== RESPALDO ===== */
 const loadXL=()=>window.ExcelJS?Promise.resolve():new Promise((ok,no)=>{const x=document.createElement("script");x.src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js";x.onload=ok;x.onerror=no;document.head.appendChild(x)});
 const xd=s=>{if(!s)return null;const[y,m,d]=parts(s);return new Date(y,m-1,d,12)};
@@ -574,21 +622,15 @@ async function supportFlow(){openModal('<p class="mt">Cargando…</p>');let ms=[
   FB.sendMessage(t).then(()=>{toast("Mensaje enviado");supportFlow()}).catch(()=>{toast("No se pudo enviar. Intenta de nuevo");$("#ss").disabled=false})}}
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&window.FB&&FB.user&&FB.me)FB.refresh().then(render).catch(()=>{})});
 
-async function eliminarCuenta(){
- const confirmacion="ELIMINAR MI CUENTA";
- openModal(`<h2 style="color:var(--er)">Eliminar mi cuenta</h2><p>Esta acción es permanente. Se eliminarán los datos de tu cuenta de RutaCobro RD, incluidos clientes, préstamos, pagos, historial, configuración, mensajes y membresía asociada. No se creará una copia de seguridad.</p><p class="mt" style="margin-top:10px">Tu cuenta de Google no se elimina; solo se elimina tu cuenta y tus datos de RutaCobro RD.</p><div class="card" style="margin-top:12px;background:#050b16"><label>Escribe exactamente <b>${confirmacion}</b></label><input id="delConfirm" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="${confirmacion}"></div><div class="mf"><button class="btn g" data-close>Cancelar</button><button class="btn d" id="delAccount" disabled>Eliminar definitivamente</button></div>`);
- const i=$("#delConfirm"),b=$("#delAccount");i.oninput=()=>{b.disabled=i.value.trim()!==confirmacion};
- b.onclick=async()=>{if(i.value.trim()!==confirmacion)return;b.disabled=true;b.textContent="Eliminando…";try{await FB.deleteAccount();closeModal();db=empty();view="hoy";render();toast("Cuenta eliminada definitivamente")}catch(e){b.disabled=false;b.textContent="Eliminar definitivamente";if(e.code==="auth/popup-closed-by-user"||e.code==="auth/cancelled-popup-request")return toast("Eliminación cancelada");toast(e.code==="auth/requires-recent-login"?"Debes volver a iniciar sesión para eliminar la cuenta":"No se pudo eliminar la cuenta. No se borró la cuenta")}};
-}
 /* ===== EVENTOS ===== */
-const A={plan:planFlow,soporte:supportFlow,eliminarCuenta,salir:()=>confirmBox("¿Cerrar sesión en este dispositivo?",()=>{closeModal();FB.signOut()},"Cerrar sesión"),eliminarCliente,eliminarPrestamo,moreLate:()=>{lateShown+=30;render()},moreToday:()=>{todayShown+=30;render()},moreHistory:()=>{historyShown+=50;render()},recibo:i=>receiptModal(db.payments.find(p=>p.id===i)),go,nuevoCliente:()=>clientForm(),editCliente:i=>clientForm(i),prestar,editLoan,cobrar,ver,exportar,importar:()=>$("#file").click(),
+const A={eliminarPrestamo,renovar,plan:planFlow,soporte:supportFlow,salir:()=>confirmBox("¿Cerrar sesión en este dispositivo?",()=>{closeModal();FB.signOut()},"Cerrar sesión"),eliminarCliente,recibo:i=>receiptModal(db.payments.find(p=>p.id===i)),go,nuevoCliente:()=>clientForm(),editCliente:i=>clientForm(i),prestar,editLoan,cobrar,ver,exportar,importar:()=>$("#file").click(),
  demo:()=>confirmBox("Se agregarán 3 clientes de prueba. ¿Continuar?",demo,"Cargar"),
  borrar:()=>confirmBox("Se borrarán todos los clientes, préstamos y pagos. No se puede deshacer. ¿Descargaste un respaldo?",()=>{try{localStorage.removeItem(KEY)}catch(e){}db=empty();render();toast("Datos borrados")},"Sí, borrar todo")};
 document.addEventListener("click",e=>{
  if(e.target.closest("[data-close]")||e.target.id==="ov")return closeModal();
  const b=e.target.closest("[data-a]");if(!b||!A[b.dataset.a])return;
  const a=b.dataset.a;if(["go","ver"].indexOf(a)<0&&["editCliente","prestar","editLoan"].indexOf(a)>=0)closeModal();
- if(locked()&&["go","exportar","salir","plan","recibo","soporte","eliminarCuenta"].indexOf(a)<0){if(["editLoan","ver","cobrar"].indexOf(a)>=0)return roView(a,b.dataset.id);return toast("Membresía vencida: solo lectura")}
+ if(locked()&&["go","exportar","salir","plan","recibo","soporte"].indexOf(a)<0){if(["editLoan","ver","cobrar"].indexOf(a)>=0)return roView(a,b.dataset.id);return toast("Membresía vencida: solo lectura")}
  A[a](b.dataset.id);
 });
 
