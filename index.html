@@ -68,6 +68,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th{color:var(--mt);font
 .client-stat .v{font-size:16px;margin-top:1px;white-space:normal;overflow-wrap:anywhere;line-height:1.25}
 .client-section-title{font-size:17px;font-weight:650;margin:16px 0 9px}
 .loan-card{background:rgba(9,17,31,.58);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:13px;margin-bottom:10px;box-shadow:0 6px 18px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.06);backdrop-filter:blur(16px) saturate(1.25);-webkit-backdrop-filter:blur(16px) saturate(1.25)}
+.movements-list{max-height:430px;overflow-y:auto;overflow-x:hidden;padding-right:4px;scrollbar-width:thin}.movements-list .it{padding-right:2px}.movements-list::-webkit-scrollbar{width:6px}.movements-list::-webkit-scrollbar-thumb{background:rgba(143,163,192,.35);border-radius:999px}
 .loan-info{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:9px 16px;align-items:start;width:100%}
 .loan-title{font-size:16px;line-height:1.35;word-break:normal;overflow-wrap:anywhere}
 .loan-meta{display:grid;gap:4px;margin-top:5px}
@@ -400,19 +401,39 @@ const loanFields=()=>`<div><label>Tipo de préstamo *</label><select name="t"><o
 <div><label>Monto prestado (RD$) *</label><input name="cap" type="number" step="0.01" min="0" inputmode="decimal"></div>
 <div class="f2 tr"><div><label>Rédito por cobro (RD$) *</label><input name="fee" type="number" step="0.01" min="0" inputmode="decimal"></div><div><label>Rédito (%) *</label><input name="rp" type="number" step="0.01" min="0" inputmode="decimal"></div></div>
 <div class="f2 tc" hidden><div><label>Ganancia total (%) *</label><input name="pct" type="number" step="0.01" min="0" inputmode="decimal"></div><div><label>Número de cuotas *</label><input name="n" type="number" step="1" min="1" inputmode="numeric"></div></div>
-<div class="f2"><div><label>Cobro *</label><select name="freq"><option value="">Selecciona</option>${freqSel("")}</select></div><div><label>Fecha de entrega *</label><input name="date" type="date"></div></div><div class="f2"><div class="wdw" hidden><label>Día de cobro *</label><select name="wd"><option value="">Selecciona</option>${["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"].map((n,i)=>`<option value="${i}">${n}</option>`).join("")}</select></div><div><label>Primer cobro *</label><input name="first" type="date"></div></div><div class="live" id="lv" hidden></div>`;
+<div class="f2"><div><label>Cobro *</label><select name="freq"><option value="">Selecciona</option>${freqSel("")}</select></div><div><label>Fecha de entrega *</label><input name="date" type="date" value="${today()}"></div></div><div class="f2"><div class="wdw" hidden><label>Día de cobro * <span class="mt">(viernes por defecto)</span></label><select name="wd"><option value="">Selecciona</option>${["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"].map((n,i)=>`<option value="${i}">${n}</option>`).join("")}</select></div><div><label>Primer cobro *</label><input name="first" type="date"></div></div><div class="live" id="lv" hidden></div>`;
 function bindLoan(fm){
+ let autoFirst="",manualFirst=false;
+ const setFirst=()=>{
+  const start=fm.date.value||today(),freq=fm.freq.value;
+  if(!freq||manualFirst)return;
+  let wd=5;
+  if(freq==="semanal")wd=fm.wd.value===""?5:Number(fm.wd.value);
+  const next=firstDue(freq,start,wd);
+  fm.first.value=next;autoFirst=next;
+ };
  const upd=()=>{const t=fm.t.value;fm.querySelectorAll(".tr").forEach(e=>e.hidden=t!=="r");fm.querySelectorAll(".tc").forEach(e=>e.hidden=t!=="c");
   const cap=num(fm.cap.value),lv=fm.querySelector("#lv");lv.hidden=!(cap>0);
-  if(t==="c"){const tot=r2(cap*(1+num(fm.pct.value)/100)),n=parseInt(fm.n.value)||0;lv.innerHTML=`<div><span>Total a pagar</span><b>${money(tot)}</b></div><div><span>Cada cuota</span><b>${n?money(tot/n):"-"}</b></div><div><span>Ganancia</span><b>${money(tot-cap)}</b></div>`}
-  else if(t==="r")lv.innerHTML=`<div><span>Rédito por cobro</span><b>${money(num(fm.fee.value))}</b></div><div><span>Capital pendiente</span><b>${money(cap)}</b></div>`;else lv.innerHTML=""};
+  if(t==="c"){const tot=r2(cap*(1+num(fm.pct.value)/100)),n=parseInt(fm.n.value)||0;lv.innerHTML=`<div><span>Total a pagar</span><b>${money(tot)}</b></div><div><span>Nueva cuota</span><b>${n?money(tot/n):"-"}</b></div><div><span>Ganancia total</span><b>${money(tot-cap)}</b></div>`}
+  else if(t==="r")lv.innerHTML=`<div><span>Rédito por cobro</span><b>${money(num(fm.fee.value))}</b></div><div><span>Capital pendiente</span><b>${money(cap)}</b></div>`;else lv.innerHTML="";
+  setFirst()};
  fm.addEventListener("input",e=>{const cap=num(fm.cap.value);
   if(e.target.name==="fee"&&cap>0&&e.target.value!=="")fm.rp.value=r2(num(fm.fee.value)/cap*100);
   if(e.target.name==="rp"&&cap>0&&e.target.value!=="")fm.fee.value=r2(cap*num(fm.rp.value)/100);
-  if(e.target.name==="cap"&&num(fm.rp.value)>0)fm.fee.value=r2(cap*num(fm.rp.value)/100);upd()});
- const sug=()=>{fm.querySelector(".wdw").hidden=fm.freq.value!=="semanal"};
- fm.addEventListener("change",e=>{if(["freq"].includes(e.target.name))sug();if(e.target.name==="t")upd()});
- upd();sug();
+  if(e.target.name==="cap"&&num(fm.rp.value)>0)fm.fee.value=r2(cap*num(fm.rp.value)/100);
+  if(e.target.name==="first")manualFirst=true;
+  upd()});
+ const sug=()=>{
+  const weekly=fm.freq.value==="semanal";
+  fm.querySelector(".wdw").hidden=!weekly;
+  if(weekly&&fm.wd.value==="")fm.wd.value="5";
+  setFirst();
+ };
+ fm.addEventListener("change",e=>{if(e.target.name==="freq"||e.target.name==="date"||e.target.name==="wd")sug();if(e.target.name==="t")upd()});
+ if(!fm.date.value)fm.date.value=today();
+ /* El primer cobro se calcula automáticamente; el usuario puede cambiarlo después. */
+ fm.first.value="";manualFirst=false;
+ sug();upd();
 }
 function readLoan(fm,required){
  const t=fm.t.value,cap=num(fm.cap.value),items=[];
@@ -482,7 +503,7 @@ function cobrar(id){
  openModal(`<h2>Cobrar a ${esc(cname(l.clientId))}</h2><div class="big"><div><div class="l">Debe</div><b>${money(balance(l))}</b></div><div><div class="l">${isC?`Cuota ${Math.min(l.k+1,l.n)} de ${l.n}`:"Rédito acordado"}</div><b>${money(d0)}</b></div><div>${tagL(l)}<div class="mt">${fdate(l.nextDate)}</div></div></div>
  <form class="f" id="fm"><div><label>Tipo de pago *</label><select name="tp">${opts.map(([k,n])=>`<option value="${k}">${n}</option>`).join("")}</select></div>
  ${isC?`<div><label>Monto recibido (RD$) *</label><input name="i" type="number" step="0.01" min="0" inputmode="decimal" value="${d0}"></div>`:`<div class="f2"><div><label>Rédito (RD$) *</label><input name="i" type="number" step="0.01" min="0" inputmode="decimal" value="${d0}"></div><div><label>Avance (RD$) *</label><input name="c" type="number" step="0.01" min="0" inputmode="decimal" value="0"></div></div>`}
- <div class="f2"><div><label>Fecha *</label><input name="date" type="date"></div><div><label>Nota</label><input name="note"></div></div>
+ <div class="f2"><div><label>Fecha *</label><input name="date" type="date" value="${today()}"></div><div><label>Nota</label><input name="note"></div></div>
  <div class="live" id="lv"></div><div class="mf"><button type="button" class="btn g" data-close>Cancelar</button><button class="btn" id="sv">Guardar cobro</button></div></form>`);
  const fm=$("#fm"),kind=()=>fm.tp.value;
  const vals=()=>({i:num(fm.i.value),c:isC?0:num(fm.c.value)});
@@ -494,7 +515,7 @@ function cobrar(id){
 function renovar(id){
  const l=loan(id),c=l&&client(l.clientId);if(!l||!c||l.renewed||isDone(l))return toast("Este préstamo no está activo");
  const oldNext=l.nextDate,oldBalance=r2(balance(l)),isC=l.type==="c";
- openModal(`<h2>Renovar préstamo</h2><p class="mt">${esc(c.name)} · se mantiene el próximo cobro: ${fdate(oldNext)}</p><form class="f" id="fm"><div><label>Monto del nuevo préstamo (RD$) *</label><input name="newMoney" type="number" step="0.01" min="0" inputmode="decimal"></div><div><label>Nueva tasa / ganancia (%) *</label><input name="pct" type="number" step="0.01" min="0" inputmode="decimal"></div>${isC?`<div><label>Número de cuotas *</label><input name="n" type="number" step="1" min="1" inputmode="numeric"></div>`:""}<div><label>Fecha de renovación *</label><input name="date" type="date" value="${today()}"></div><div class="live renew-preview"><div><span>Saldo pendiente anterior</span><b>${money(oldBalance)}</b></div><div><span>Nuevo préstamo</span><b id="rvCap">-</b></div><div><span>Dinero a entregar</span><b id="rvCash">-</b></div><div><span>Nueva ganancia</span><b id="rvGain">-</b></div><div><span>Nuevo total</span><b id="rvTot">-</b></div><div id="rvInstallments"><span>Nuevas cuotas</span><b id="rvN">-</b></div><div id="rvPayment"><span>Nueva cuota</span><b id="rvCuota">-</b></div></div><div class="mf"><button type="button" class="btn g" data-close>Cancelar</button><button class="btn" id="rvSave">Renovar</button></div></form>`);
+ openModal(`<h2>Renovar préstamo</h2><p class="mt">${esc(c.name)} · se mantiene el próximo cobro: ${fdate(oldNext)}</p><form class="f" id="fm"><div><label>Monto del nuevo préstamo (RD$) *</label><input name="newMoney" type="number" step="0.01" min="0" inputmode="decimal"></div><div><label>Nueva tasa / ganancia (%) *</label><input name="pct" type="number" step="0.01" min="0" inputmode="decimal"></div>${isC?`<div><label>Número de cuotas *</label><input name="n" type="number" step="1" min="1" inputmode="numeric"></div>`:""}<div><label>Fecha de renovación *</label><input name="date" type="date" value="${today()}"></div><div class="live renew-preview"><div><span>Saldo pendiente anterior</span><b>${money(oldBalance)}</b></div><div><span>Nuevo préstamo</span><b id="rvCap">-</b></div><div><span>Dinero a entregar</span><b id="rvCash">-</b></div><div><span>Nueva ganancia</span><b id="rvGain">-</b></div><div><span>Nuevo total</span><b id="rvTot">-</b></div><div id="rvInstallments"><span>Número de cuotas</span><b id="rvN">-</b></div><div id="rvPayment"><span>Nueva cuota</span><b id="rvCuota">-</b></div></div><div class="mf"><button type="button" class="btn g" data-close>Cancelar</button><button class="btn" id="rvSave">Renovar</button></div></form>`);
  const fm=$("#fm"),upd=()=>{const nm=num(fm.newMoney.value),pct=num(fm.pct.value),n=isC?(parseInt(fm.n.value)||0):0,newGain=r2(nm*pct/100),cash=r2(nm-oldBalance),total=r2(nm+newGain);$("#rvCap").textContent=money(nm);$("#rvCash").textContent=cash>=0?money(cash):"-";$("#rvGain").textContent=money(newGain);$("#rvTot").textContent=money(total);if(isC){$("#rvInstallments").style.display="flex";$("#rvPayment").style.display="flex";$("#rvN").textContent=n||"-";$("#rvCuota").textContent=n?money(total/n):"-"}};
  fm.addEventListener("input",upd);upd();
  fm.onsubmit=e=>{e.preventDefault();const items=[],nm=num(fm.newMoney.value),pct=num(fm.pct.value);if(!(nm>0))items.push([fm.newMoney,"Monto obligatorio"]);if(fm.pct.value===""||pct<0)items.push([fm.pct,"% obligatorio"]);if(isC&&(fm.n.value===""||!Number.isInteger(Number(fm.n.value))||Number(fm.n.value)<1))items.push([fm.n,"Cuotas obligatorias"]);if(!fm.date.value)items.push([fm.date,"Fecha obligatoria"]);if(!finishValidation(fm,items))return;
@@ -541,12 +562,12 @@ function receiptModal(p,title){
  openModal(`<h2>${title||"Recibo"}</h2><pre style="white-space:pre-wrap;font:inherit;font-size:14px;background:#050b16;border:1px solid var(--bd);border-radius:12px;padding:12px">${esc(t)}</pre>${n?`<p class="mt" style="margin-top:8px">Se enviará al WhatsApp de ${esc(c.name)} (+${n}).</p>`:`<p class="mt" style="margin-top:8px;color:var(--wn)">Este cliente no tiene un teléfono válido guardado. WhatsApp te dejará escoger el contacto.</p>`}<div class="mf"><button class="btn g" data-close>Cerrar</button><a class="btn" href="${esc(url)}" target="_blank" rel="noopener" style="text-decoration:none;display:inline-block">Enviar por WhatsApp</a></div>`);
 }
 function ver(cid){
- const c=client(cid),ls=db.loans.filter(l=>l.clientId===cid&&!l.renewed).sort(byDate),ps=db.payments.filter(p=>p.clientId===cid).sort((a,b)=>b.date.localeCompare(a.date));
+ const c=client(cid),ls=db.loans.filter(l=>l.clientId===cid&&!l.renewed).sort(byDate),ps=db.payments.filter(p=>p.clientId===cid).sort((a,b)=>{const d=b.date.localeCompare(a.date);return d||String(b.id||"").localeCompare(String(a.id||""))});
  openModal(`<h2>${esc(c.name)}</h2><div class="mt">${esc(c.phone||"Sin teléfono")} · ${esc(c.ref||"Sin referencia")}</div>
  <div class="card client-summary"><div class="client-stat"><div class="l">Debe</div><div class="v">${money(sum(active().filter(l=>l.clientId===cid),balance))}</div></div><div class="client-stat"><div class="l">Ganancia cobrada</div><div class="v">${money(sum(ps,p=>p.interest))}</div></div></div>
  <div class="client-section-title">Préstamos <span class="mt" style="font-size:14px;font-weight:500">(${ls.length})</span></div>
  ${ls.length?ls.map(l=>`<div class="loan-card"><div class="loan-info"><div><div class="loan-title"><b>${money(l.capital)}</b></div><div class="loan-meta"><div class="mt">${desc(l)} · ${FL[l.freq].toLowerCase()}</div><div class="mt">Debe <b style="color:var(--tx)">${money(balance(l))}</b></div></div></div><div class="loan-meta"><div class="mt">Próximo cobro</div><div>${isDone(l)?"Liquidado":fdate(l.nextDate)}</div><div>${isDone(l)?"":status(l)}</div></div></div><div class="loan-actions"><button class="btn g" data-a="editLoan" data-id="${l.id}">Editar</button>${isDone(l)?"":`<button class="btn" data-a="cobrar" data-id="${l.id}">Cobrar</button><button class="btn g" data-a="renovar" data-id="${l.id}">Renovar</button>`}<button class="btn d" data-a="eliminarPrestamo" data-id="${l.id}">Eliminar</button></div></div>`).join(""):`<div class="empty">Este cliente todavía no tiene préstamos.</div>`}
- <div class="client-section-title">Movimientos</div>${ps.length?`<div class="card" style="margin-bottom:0">${ps.map(p=>`<div class="it"><div class="grow"><div>${fdate(p.date)} · ${concept(p)}</div><div class="mt">${esc(p.note||"")}</div></div><div style="text-align:right"><b>${money(p.interest+p.capital)}</b><div class="mt">Capital ${money(p.capital)}</div><div class="mt" style="color:var(--ok)">Ganancia ${money(p.interest)}</div></div><button class="btn s g" data-a="recibo" data-id="${p.id}">Recibo</button></div>`).join("")}</div>`:`<div class="mt">Sin movimientos.</div>`}
+ <div class="client-section-title">Movimientos</div>${ps.length?`<div class="card movements-list" style="margin-bottom:0">${ps.map(p=>`<div class="it"><div class="grow"><div>${fdate(p.date)} · ${concept(p)}</div><div class="mt">${esc(p.note||"")}</div></div><div style="text-align:right"><b>${money(p.interest+p.capital)}</b><div class="mt">Capital ${money(p.capital)}</div><div class="mt" style="color:var(--ok)">Ganancia ${money(p.interest)}</div></div><button class="btn s g" data-a="recibo" data-id="${p.id}">Recibo</button></div>`).join("")}</div>`:`<div class="mt">Sin movimientos.</div>`}
  <div class="client-footer-actions"><button class="btn g" data-close>Cerrar</button><button class="btn g" data-a="editCliente" data-id="${cid}">Editar datos</button><button class="btn" data-a="prestar" data-id="${cid}">Nuevo préstamo</button><button class="btn d" data-a="eliminarCliente" data-id="${cid}">Eliminar cliente</button></div>`);
 }
 /* ===== RESPALDO ===== */
