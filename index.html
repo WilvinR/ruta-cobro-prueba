@@ -46,6 +46,7 @@ label{display:block;color:var(--mt);font-size:13px;margin-bottom:4px}
 .big{background:#050b16;border:1px solid var(--bd);border-radius:14px;padding:12px;margin-bottom:12px;display:flex;justify-content:space-between;gap:10px}
 .live{background:rgba(47,123,255,.09);border:1px solid var(--bd);border-radius:12px;padding:10px 12px;font-size:14px}
 .live div{display:flex;justify-content:space-between;padding:2px 0}
+.daypicker{border:1px solid var(--bd);border-radius:10px;background:var(--bg);padding:8px 10px}.daypicker summary{cursor:pointer;font-weight:600}.daygrid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:9px}.daygrid label{position:relative}.daygrid input{position:absolute;opacity:0;pointer-events:none}.daygrid span{display:flex;align-items:center;justify-content:center;min-height:32px;border:1px solid var(--bd);border-radius:8px;cursor:pointer}.daygrid input:checked+span{background:var(--ac);color:#fff;border-color:var(--ac)}
 .mf{display:flex;gap:10px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
 .sep{border-top:1px solid var(--bd);padding-top:12px;color:var(--ce);font-size:14px}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--p2);border:1px solid var(--ce);padding:10px 20px;border-radius:999px;z-index:99}
@@ -96,7 +97,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th{color:var(--mt);font
 .field-error{color:var(--er);font-size:12px;margin-top:7px;margin-bottom:2px;line-height:1.25;display:block}.invalid{border-color:var(--er)!important;box-shadow:0 0 0 1px rgba(236,122,122,.18)}.field-wrap{min-width:0}
 
 
-.mb{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--bl);background:#0b1730;border-radius:14px;padding:10px 12px;margin-bottom:12px;font-size:14.5px}.announcement-overlay{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.72);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}.announcement{position:relative;width:min(460px,calc(100vw - 32px));max-height:calc(100svh - 40px);overflow:auto;background:linear-gradient(135deg,rgba(47,123,255,.18),rgba(9,17,31,.98));border:1px solid var(--ce);border-radius:18px;padding:22px 56px 22px 20px;box-shadow:0 20px 60px rgba(0,0,0,.55)}.announcement .at{font-weight:700;font-size:18px;margin-bottom:8px}.announcement .am{font-size:15px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}.announcement .ax{position:absolute;top:12px;right:12px;width:38px;height:38px;border:0;border-radius:50%;background:var(--er);color:#fff;font-size:24px;line-height:1;cursor:pointer}.announcement .ax:active{transform:scale(.94)}
+.mb{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--bl);background:#0b1730;border-radius:14px;padding:10px 12px;margin-bottom:12px;font-size:14.5px}.announcement{position:relative;background:linear-gradient(135deg,rgba(47,123,255,.18),rgba(9,17,31,.96));border:1px solid var(--ce);border-radius:14px;padding:13px 48px 13px 14px;margin-bottom:12px;box-shadow:0 8px 24px rgba(0,0,0,.24)}.announcement .at{font-weight:700;font-size:15px;margin-bottom:4px}.announcement .am{font-size:14px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}.announcement .ax{position:absolute;top:9px;right:9px;width:31px;height:31px;border:0;border-radius:50%;background:var(--er);color:#fff;font-size:20px;line-height:1;cursor:pointer}.announcement .ax:active{transform:scale(.94)}
 .mb.wn{border-color:var(--wn);background:#241a08}.mb.er{border-color:var(--er);background:#2a1214}
 a.btn{display:inline-block;text-decoration:none;text-align:center}
 .pl{display:flex;align-items:center;gap:12px;border:1px solid var(--bd);border-radius:14px;padding:12px;margin-bottom:10px;cursor:pointer}
@@ -222,7 +223,7 @@ window.dispatchEvent(new Event("fb-ready"));
 <script>
 "use strict";
 const KEY="rutacobro_rd_v1",BKEY="rutacobro_rd_respaldo_previo";
-const FREQ={diario:1,semanal:7,quincenal:15,mensual:30},FL={diario:"Diario",semanal:"Semanal",quincenal:"Quincenal",mensual:"Mensual"};
+const FREQ={diario:1,semanal:7,quincenal:15,mensual:30,personalizado:0},FL={diario:"Diario",semanal:"Semanal",quincenal:"Quincenal",mensual:"Mensual",personalizado:"Personalizado"};
 let db=empty(),view="hoy",q="",per="todo",rp="y"+new Date().getFullYear(),rd1="",rd2="";
 function empty(){return{clients:[],loans:[],payments:[],settings:{}}}
 function valid(d){return d&&typeof d==="object"&&["clients","loans","payments"].every(k=>Array.isArray(d[k]))}
@@ -242,11 +243,15 @@ const parts=s=>s.split("-").map(Number);
 function nextQuin(s){const[y,m,d]=parts(s),b=Math.min(30,lastDay(y,m));return d<15?ymd(y,m,15):d<b?ymd(y,m,b):ymd(y,m+1,15)}
 function nextMonth(s,dom){const[y,m,d]=parts(s);return ymd(y,m+1,dom||d)}
 /* Siguiente cobro: semanal = mismo día de la semana; quincenal = días 15 y 30; mensual = mismo día del mes */
-function advance(l,from){const f=from||l.nextDate;return l.freq==="diario"?addDays(f,1):l.freq==="semanal"?addDays(f,7):l.freq==="quincenal"?nextQuin(f):nextMonth(f,l.dom)}
-function firstDue(freq,start,wd){
+function customDays(l){return Array.isArray(l.customDays)?l.customDays.map(Number).filter(d=>d>=1&&d<=31).sort((a,b)=>a-b):[]}
+function nextCustom(s,days){const ds=[...new Set((days||[]).map(Number).filter(d=>d>=1&&d<=31))].sort((a,b)=>a-b);if(!ds.length)return addDays(s,1);const[y,m,d]=parts(s);for(let off=1;off<=62;off++){const z=new Date(y,m-1,d+off),day=Math.min(z.getDate(),lastDay(z.getFullYear(),z.getMonth()+1));if(ds.includes(day))return iso(z)}return addDays(s,1)}
+function advance(l,from){const f=from||l.nextDate;return l.freq==="diario"?addDays(f,1):l.freq==="semanal"?addDays(f,7):l.freq==="quincenal"?nextQuin(f):l.freq==="personalizado"?nextCustom(f,customDays(l)):nextMonth(f,l.dom)}
+function firstDue(freq,start,wd,days){
  if(freq==="diario")return addDays(start,1);
  if(freq==="semanal"){const[y,m,d]=parts(start),dow=new Date(y,m-1,d).getDay();return addDays(start,((wd-dow+7)%7)||7)}
- return freq==="quincenal"?nextQuin(start):nextMonth(start,parts(start)[2]);
+ if(freq==="quincenal")return nextQuin(start);
+ if(freq==="personalizado")return nextCustom(start,days);
+ return nextMonth(start,parts(start)[2]);
 }
 const fdate=s=>s?s.split("-").reverse().join("/"):"-";
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -312,7 +317,7 @@ function pay(l,date,intr,cap,note,kind){
  db.payments.push(p);save();return p;
 }
 function newLoan(clientId,ln,note){
- const o={id:uid(),clientId,type:ln.t,capital:r2(ln.cap),initialCapital:r2(ln.cap),freq:ln.freq,startDate:ln.date,nextDate:ln.first||firstDue(ln.freq,ln.date,ln.wd==null?5:ln.wd),dom:parts(ln.date)[2],wd:ln.wd==null?5:ln.wd,note:note||"",credit:0,capPaid:0};
+ const o={id:uid(),clientId,type:ln.t,capital:r2(ln.cap),initialCapital:r2(ln.cap),freq:ln.freq,startDate:ln.date,nextDate:ln.first||firstDue(ln.freq,ln.date,ln.wd==null?5:ln.wd,ln.customDays||[]),dom:parts(ln.date)[2],wd:ln.wd==null?5:ln.wd,customDays:Array.isArray(ln.customDays)?ln.customDays:[],note:note||"",credit:0,capPaid:0};
  if(ln.t==="c"){const total=r2(ln.cap*(1+ln.pct/100));Object.assign(o,{pct:ln.pct,n:ln.n,total,cu:r2(total/ln.n),gan:r2((total-ln.cap)/ln.n),rcredit:0,paid:0,k:0,principal:0})}
  else Object.assign(o,{principal:r2(ln.cap),fee:r2(ln.fee),rate:ln.fee/ln.cap*100});
  db.loans.push(o);
@@ -345,7 +350,7 @@ clientes(){
 historial(){
  const t=today(),ps=db.payments.map((p,i)=>({p,i})).filter(x=>inPer(x.p.date)).sort((a,b)=>{const d=b.p.date.localeCompare(a.p.date);return d||b.i-a.i}).map(x=>x.p),o=(v,l)=>`<option value="${v}" ${per===v?"selected":""}>${l}</option>`;
  return`<h1>Historial</h1>
- <div class="card"><select id="per" style="margin-bottom:8px">${o("hoy","Hoy")}${o("semana","Esta semana")}${o("mes","Este mes")}${o("todo","Todo el tiempo")}</select>${ps.length?`<div class="mt" style="margin-bottom:4px">${ps.length} ${ps.length===1?"movimiento":"movimientos"} · ${money(sum(ps,p=>p.interest+p.capital))}</div>`:""}${ps.length?ps.slice(0,80).map(p=>`<div class="it"><div class="grow"><div class="nm" style="cursor:default">${esc(cname(p.clientId))}</div><div class="mt">${fdate(p.date)} · ${concept(p)}${p.renewal?" · Nuevo préstamo "+money(p.renewalAmount||0)+" · Entregado "+money(p.investment||0):p.note?" · "+esc(p.note):""}</div></div><div style="text-align:right"><b>${money(p.interest+p.capital)}</b><div class="mt">Capital ${money(p.capital)}</div><div class="mt" style="color:var(--ok)">Ganancia ${money(p.interest)}</div></div></div>`).join(""):`<div class="empty">Sin movimientos en este período.</div>`}</div>`;
+ <div class="card"><select id="per" style="margin-bottom:8px">${o("hoy","Hoy")}${o("semana","Esta semana")}${o("mes","Este mes")}${o("todo","Todo el tiempo")}</select>${ps.length?`<div class="mt" style="margin-bottom:4px">${ps.length} ${ps.length===1?"movimiento":"movimientos"} · ${money(sum(ps,p=>p.interest+p.capital))}</div>`:""}${ps.length?`${ps.slice(0,80).map(p=>`<div class="it"><div class="grow"><div class="nm" style="cursor:default">${esc(cname(p.clientId))}</div><div class="mt">${fdate(p.date)} · ${concept(p)}${p.renewal?" · Nuevo préstamo "+money(p.renewalAmount||0)+" · Entregado "+money(p.investment||0):p.note?" · "+esc(p.note):""}</div></div><div style="text-align:right"><b>${money(p.interest+p.capital)}</b><div class="mt">Capital ${money(p.capital)}</div><div class="mt" style="color:var(--ok)">Ganancia ${money(p.interest)}</div></div></div>`).join(""):`<div class="empty">Sin movimientos en este período.</div>`}</div>`;
 },
 resumen(){
  const t=today(),cy=String(new Date().getFullYear()),yrs=new Set([cy]);
@@ -401,16 +406,16 @@ const loanFields=()=>`<div><label>Tipo de préstamo *</label><select name="t"><o
 <div><label>Monto prestado (RD$) *</label><input name="cap" type="number" step="0.01" min="0" inputmode="decimal"></div>
 <div class="f2 tr"><div><label>Rédito por cobro (RD$) *</label><input name="fee" type="number" step="0.01" min="0" inputmode="decimal"></div><div><label>Rédito (%) *</label><input name="rp" type="number" step="0.01" min="0" inputmode="decimal"></div></div>
 <div class="f2 tc" hidden><div><label>Ganancia total (%) *</label><input name="pct" type="number" step="0.01" min="0" inputmode="decimal"></div><div><label>Número de cuotas *</label><input name="n" type="number" step="1" min="1" inputmode="numeric"></div></div>
-<div class="f2"><div><label>Cobro *</label><select name="freq"><option value="">Selecciona</option>${freqSel("")}</select></div><div><label>Fecha de entrega *</label><input name="date" type="date" value="${today()}"></div></div><div class="f2"><div class="wdw" hidden><label>Día de cobro * <span class="mt">(viernes por defecto)</span></label><select name="wd"><option value="">Selecciona</option>${["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"].map((n,i)=>`<option value="${i}">${n}</option>`).join("")}</select></div><div><label>Primer cobro *</label><input name="first" type="date"></div></div><div class="live" id="lv" hidden></div>`;
+<div class="f2"><div><label>Cobro *</label><select name="freq"><option value="">Selecciona</option>${freqSel("")}</select></div><div><label>Fecha de entrega *</label><input name="date" type="date" value="${today()}"></div></div>
+<div class="f2"><div class="wdw" hidden><label>Día de cobro * <span class="mt">(viernes por defecto)</span></label><select name="wd"><option value="">Selecciona</option>${["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"].map((n,i)=>`<option value="${i}">${n}</option>`).join("")}</select></div><div class="cdw" hidden><label>Días de cobro *</label><details class="daypicker"><summary>Seleccionar días</summary><div class="daygrid">${Array.from({length:31},(_,i)=>i+1).map(d=>`<label><input type="checkbox" name="cd" value="${d}"><span>${d}</span></label>`).join("")}</div><div class="mt" style="margin-top:8px">Selecciona uno o varios días del mes.</div></details><div class="mt cdays-label"></div></div><div><label>Primer cobro *</label><input name="first" type="date"></div></div><div class="live" id="lv" hidden></div>`;
 function bindLoan(fm){
  let autoFirst="",manualFirst=false;
  const setFirst=()=>{
   const start=fm.date.value||today(),freq=fm.freq.value;
   if(!freq||manualFirst)return;
-  let wd=5;
-  if(freq==="semanal")wd=fm.wd.value===""?5:Number(fm.wd.value);
-  const next=firstDue(freq,start,wd);
-  fm.first.value=next;autoFirst=next;
+  let wd=5;if(freq==="semanal")wd=fm.wd.value===""?5:Number(fm.wd.value);
+  const days=[...fm.querySelectorAll('input[name="cd"]:checked')].map(x=>Number(x.value));
+  const next=firstDue(freq,start,wd,days);if(freq!=="personalizado"||days.length)fm.first.value=next;autoFirst=next;
  };
  const upd=()=>{const t=fm.t.value;fm.querySelectorAll(".tr").forEach(e=>e.hidden=t!=="r");fm.querySelectorAll(".tc").forEach(e=>e.hidden=t!=="c");
   const cap=num(fm.cap.value),lv=fm.querySelector("#lv");lv.hidden=!(cap>0);
@@ -424,12 +429,12 @@ function bindLoan(fm){
   if(e.target.name==="first")manualFirst=true;
   upd()});
  const sug=()=>{
-  const weekly=fm.freq.value==="semanal";
-  fm.querySelector(".wdw").hidden=!weekly;
+  const weekly=fm.freq.value==="semanal",custom=fm.freq.value==="personalizado";
+  fm.querySelector(".wdw").hidden=!weekly;fm.querySelector(".cdw").hidden=!custom;
   if(weekly&&fm.wd.value==="")fm.wd.value="5";
   setFirst();
  };
- fm.addEventListener("change",e=>{if(e.target.name==="freq"||e.target.name==="date"||e.target.name==="wd")sug();if(e.target.name==="t")upd()});
+ fm.addEventListener("change",e=>{if(e.target.name==="freq"||e.target.name==="date"||e.target.name==="wd"||e.target.name==="cd")sug();if(e.target.name==="t")upd();if(e.target.name==="cd"){const ds=[...fm.querySelectorAll('input[name="cd"]:checked')].map(x=>x.value);fm.querySelector('.cdays-label').textContent=ds.length?`Seleccionados: ${ds.join(", ")}`:"Selecciona uno o varios días del mes."}});
  if(!fm.date.value)fm.date.value=today();
  /* El primer cobro se calcula automáticamente; el usuario puede cambiarlo después. */
  fm.first.value="";manualFirst=false;
@@ -444,9 +449,11 @@ function readLoan(fm,required){
  if(!fm.first.value)items.push([fm.first,"Fecha obligatoria"]);
  if(t==="r"){const feeEmpty=fm.fee.value==="",rpEmpty=fm.rp.value==="";if(feeEmpty&&rpEmpty){items.push([fm.fee,"Escribe rédito o %"])}else if(!feeEmpty&&!(num(fm.fee.value)>0)){items.push([fm.fee,"Rédito inválido"])}else if(!rpEmpty&&!(num(fm.rp.value)>0)){items.push([fm.rp,"% inválido"])}else if(!feeEmpty&&rpEmpty&&cap>0)fm.rp.value=r2(num(fm.fee.value)/cap*100);else if(feeEmpty&&!rpEmpty&&cap>0)fm.fee.value=r2(cap*num(fm.rp.value)/100);
  }else if(t==="c"){if(fm.pct.value===""||!(num(fm.pct.value)>=0))items.push([fm.pct,"% obligatorio"]);if(fm.n.value===""||!Number.isInteger(Number(fm.n.value))||Number(fm.n.value)<1)items.push([fm.n,"Cuotas obligatorias"]);}
- if(t==="semanal"&&!fm.wd.value)items.push([fm.wd,"Selecciona el día"]);
+ if(fm.freq.value==="semanal"&&!fm.wd.value)items.push([fm.wd,"Selecciona el día"]);
+ const customDays=[...fm.querySelectorAll('input[name="cd"]:checked')].map(x=>Number(x.value)).sort((a,b)=>a-b);
+ if(fm.freq.value==="personalizado"&&!customDays.length)items.push([fm.querySelector('.daypicker'),"Selecciona al menos un día"]);
  if(!finishValidation(fm,items))return false;
- const o={t,cap,freq:fm.freq.value,date:fm.date.value,wd:fm.wd.value===""?null:+fm.wd.value,first:fm.first.value};
+ const o={t,cap,freq:fm.freq.value,date:fm.date.value,wd:fm.wd.value===""?null:+fm.wd.value,customDays:fm.freq.value==="personalizado"?customDays:[],first:fm.first.value};
  if(t==="r")o.fee=r2(num(fm.fee.value));else{o.pct=r2(num(fm.pct.value));o.n=Number(fm.n.value)}
  return o;
 }
@@ -474,6 +481,8 @@ function editLoan(id){
  if(isC){fm.pct.value=curPct;fm.n.value=l.n}else{fm.fee.value=l.fee;fm.rp.value=r2(l.fee/l.capital*100)}
  fm.freq.value=l.freq;fm.date.value=l.startDate||today();fm.wd.value=l.wd==null?5:l.wd;
  bindLoan(fm);
+ if(Array.isArray(l.customDays))l.customDays.forEach(d=>{const x=fm.querySelector(`input[name="cd"][value="${d}"]`);if(x)x.checked=true});
+ fm.querySelector(".cdays-label").textContent=Array.isArray(l.customDays)&&l.customDays.length?`Seleccionados: ${l.customDays.join(", ")}`:"Selecciona uno o varios días del mes.";
  fm.first.value=l.nextDate;fm.first.dispatchEvent(new Event("input",{bubbles:true}));
  fm.onsubmit=e=>{e.preventDefault();const o=readLoan(fm,true);if(!o)return;
   const same=o.t===l.type&&Math.abs(o.cap-l.capital)<EPS&&(isC?(o.n===l.n&&Math.abs(o.pct-curPct)<0.005):Math.abs(o.fee-l.fee)<EPS);
@@ -494,7 +503,7 @@ function editLoan(id){
     ["n","total","cu","gan","paid","k","pct","rcredit"].forEach(x=>delete l[x]);
    }
   }
-  l.freq=o.freq;l.startDate=o.date;l.nextDate=o.first;l.dom=parts(o.date)[2];l.wd=o.wd;
+  l.freq=o.freq;l.startDate=o.date;l.nextDate=o.first;l.dom=parts(o.date)[2];l.wd=o.wd;l.customDays=o.customDays||[];
   save();closeModal();render();toast("Guardado")};
 }
 function cobrar(id){
@@ -640,7 +649,7 @@ const locked=()=>mem().s==="locked";
 const dd=n=>n+(n===1?" día":" días");
 function memText(){const m=mem();return{exempt:"Membresía: exonerada",paid:"Membresía activa hasta "+(m.u?fmtd(m.u):""),trial:"Prueba gratis: "+(m.d?dd(m.d):"")+" restantes",grace:"Membresía vencida: te quedan "+(m.d?dd(m.d):""),locked:"Membresía vencida: modo solo lectura"}[m.s]}
 function pendBanner(){const m=(window.FB&&FB.me)||{};return m.pending&&["paid","exempt"].indexOf(mem().s)<0?`<div class="mb"><span>⏳ Comprobante enviado. Estamos verificando tu pago.</span></div>`:""}
-function announcement(){const a=(_cfg&&_cfg.announcement)||{},seen=(window.FB&&FB.me&&FB.me.announcementSeen)||"";if(!a.id||!a.title||!a.message||seen===String(a.id))return"";return`<div class="announcement-overlay"><div class="announcement"><button class="ax" data-a="cerrarActualizacion" aria-label="Cerrar actualización">×</button><div class="at">${esc(a.title)}</div><div class="am">${esc(a.message)}</div></div></div>`}
+function announcement(){const a=(_cfg&&_cfg.announcement)||{},seen=(window.FB&&FB.me&&FB.me.announcementSeen)||"";if(!a.id||!a.title||!a.message||seen===String(a.id))return"";return`<div class="announcement"><button class="ax" data-a="cerrarActualizacion" aria-label="Cerrar actualización">×</button><div class="at">${esc(a.title)}</div><div class="am">${esc(a.message)}</div></div>`}
 function banner(){return pendBanner()+mbanner()}
 function mbanner(){const m=mem();let t,c;
  if(m.s==="trial"){t="Prueba gratis: "+(m.d===1?"te queda 1 día":"te quedan "+m.d+" días");c=""}
