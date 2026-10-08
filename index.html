@@ -96,7 +96,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th{color:var(--mt);font
 .field-error{color:var(--er);font-size:12px;margin-top:7px;margin-bottom:2px;line-height:1.25;display:block}.invalid{border-color:var(--er)!important;box-shadow:0 0 0 1px rgba(236,122,122,.18)}.field-wrap{min-width:0}
 
 
-.mb{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--bl);background:#0b1730;border-radius:14px;padding:10px 12px;margin-bottom:12px;font-size:14.5px}
+.mb{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--bl);background:#0b1730;border-radius:14px;padding:10px 12px;margin-bottom:12px;font-size:14.5px}.announcement{position:relative;background:linear-gradient(135deg,rgba(47,123,255,.18),rgba(9,17,31,.96));border:1px solid var(--ce);border-radius:14px;padding:13px 48px 13px 14px;margin-bottom:12px;box-shadow:0 8px 24px rgba(0,0,0,.24)}.announcement .at{font-weight:700;font-size:15px;margin-bottom:4px}.announcement .am{font-size:14px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}.announcement .ax{position:absolute;top:9px;right:9px;width:31px;height:31px;border:0;border-radius:50%;background:var(--er);color:#fff;font-size:20px;line-height:1;cursor:pointer}.announcement .ax:active{transform:scale(.94)}
 .mb.wn{border-color:var(--wn);background:#241a08}.mb.er{border-color:var(--er);background:#2a1214}
 a.btn{display:inline-block;text-decoration:none;text-align:center}
 .pl{display:flex;align-items:center;gap:12px;border:1px solid var(--bd);border-radius:14px;padding:12px;margin-bottom:10px;cursor:pointer}
@@ -160,7 +160,7 @@ window.FB={
  redirectResult:()=>getRedirectResult(auth),
  signOut:()=>{me=null;return signOut(auth)},
  refresh:async()=>{if(auth.currentUser)await window.FB.ready(auth.currentUser)},
- getConfig:async()=>{const s=await getDoc(doc(fs,"config","app"));return s.exists()?s.data():{}},
+ getConfig:async()=>{const s=await getDoc(doc(fs,"config","app"));return s.exists()?s.data():{}}, dismissAnnouncement:async id=>{if(!id||!auth.currentUser)return;await setDoc(doc(fs,"users",auth.currentUser.uid),{announcementSeen:id},{merge:true});if(me)me.announcementSeen=id},
  get user(){return auth.currentUser},
  setPending:(plan,amount)=>{me.pending=true;return setDoc(doc(fs,"pendientes",auth.currentUser.uid),{uid:auth.currentUser.uid,code:me.code,name:me.name,plan,amount,sentAt:serverTimestamp()})},
  sendMessage:text=>addDoc(collection(fs,"mensajes"),{uid:auth.currentUser.uid,code:me.code,name:me.name,email:me.email,text,createdAt:serverTimestamp(),status:"nuevo"}),
@@ -345,7 +345,7 @@ clientes(){
 historial(){
  const t=today(),ps=db.payments.map((p,i)=>({p,i})).filter(x=>inPer(x.p.date)).sort((a,b)=>{const d=b.p.date.localeCompare(a.p.date);return d||b.i-a.i}).map(x=>x.p),o=(v,l)=>`<option value="${v}" ${per===v?"selected":""}>${l}</option>`;
  return`<h1>Historial</h1>
- <div class="card"><select id="per" style="margin-bottom:8px">${o("hoy","Hoy")}${o("semana","Esta semana")}${o("mes","Este mes")}${o("todo","Todo el tiempo")}</select>${ps.length?`<div class="mt" style="margin-bottom:4px">${ps.length} ${ps.length===1?"movimiento":"movimientos"} · ${money(sum(ps,p=>p.interest+p.capital))}</div>`:""}${ps.length?`<div class="movements-list">${ps.slice(0,80).map(p=>`<div class="it"><div class="grow"><div class="nm" style="cursor:default">${esc(cname(p.clientId))}</div><div class="mt">${fdate(p.date)} · ${concept(p)}${p.renewal?" · Nuevo préstamo "+money(p.renewalAmount||0)+" · Entregado "+money(p.investment||0):p.note?" · "+esc(p.note):""}</div></div><div style="text-align:right"><b>${money(p.interest+p.capital)}</b><div class="mt">Capital ${money(p.capital)}</div><div class="mt" style="color:var(--ok)">Ganancia ${money(p.interest)}</div></div></div>`).join("")}</div>`:`<div class="empty">Sin movimientos en este período.</div>`}</div>`;
+ <div class="card"><select id="per" style="margin-bottom:8px">${o("hoy","Hoy")}${o("semana","Esta semana")}${o("mes","Este mes")}${o("todo","Todo el tiempo")}</select>${ps.length?`<div class="mt" style="margin-bottom:4px">${ps.length} ${ps.length===1?"movimiento":"movimientos"} · ${money(sum(ps,p=>p.interest+p.capital))}</div>`:""}${ps.length?`${ps.slice(0,80).map(p=>`<div class="it"><div class="grow"><div class="nm" style="cursor:default">${esc(cname(p.clientId))}</div><div class="mt">${fdate(p.date)} · ${concept(p)}${p.renewal?" · Nuevo préstamo "+money(p.renewalAmount||0)+" · Entregado "+money(p.investment||0):p.note?" · "+esc(p.note):""}</div></div><div style="text-align:right"><b>${money(p.interest+p.capital)}</b><div class="mt">Capital ${money(p.capital)}</div><div class="mt" style="color:var(--ok)">Ganancia ${money(p.interest)}</div></div></div>`).join(""):`<div class="empty">Sin movimientos en este período.</div>`}</div>`;
 },
 resumen(){
  const t=today(),cy=String(new Date().getFullYear()),yrs=new Set([cy]);
@@ -382,7 +382,7 @@ const NAV=[["hoy","Hoy"],["clientes","Clientes"],["historial","Historial"],["res
 function render(){
  const nl=active().filter(l=>l.nextDate<today()).length;
  $("#nav").innerHTML=NAV.map(([k,l])=>`<button data-a="go" data-id="${k}" class="${view===k?"on":""}">${l}${k==="hoy"&&nl?`<span class="bdg">${nl}</span>`:""}</button>`).join("");
- document.body.classList.toggle("ro",locked());$("#app").innerHTML=banner()+VIEWS[view]();
+ document.body.classList.toggle("ro",locked());$("#app").innerHTML=banner()+announcement()+VIEWS[view]();
  const i=$("#q");if(i)i.oninput=e=>{q=e.target.value;const p=e.target.selectionStart;render();const n=$("#q");n.focus();n.setSelectionRange(p,p)};
  const p=$("#per");if(p)p.onchange=e=>{per=e.target.value;render()};
  const rs=$("#rp");if(rs)rs.onchange=e=>{rp=e.target.value;render()};
@@ -640,6 +640,7 @@ const locked=()=>mem().s==="locked";
 const dd=n=>n+(n===1?" día":" días");
 function memText(){const m=mem();return{exempt:"Membresía: exonerada",paid:"Membresía activa hasta "+(m.u?fmtd(m.u):""),trial:"Prueba gratis: "+(m.d?dd(m.d):"")+" restantes",grace:"Membresía vencida: te quedan "+(m.d?dd(m.d):""),locked:"Membresía vencida: modo solo lectura"}[m.s]}
 function pendBanner(){const m=(window.FB&&FB.me)||{};return m.pending&&["paid","exempt"].indexOf(mem().s)<0?`<div class="mb"><span>⏳ Comprobante enviado. Estamos verificando tu pago.</span></div>`:""}
+function announcement(){const a=(_cfg&&_cfg.announcement)||{},seen=(window.FB&&FB.me&&FB.me.announcementSeen)||"";if(!a.id||!a.title||!a.message||seen===String(a.id))return"";return`<div class="announcement"><button class="ax" data-a="cerrarActualizacion" aria-label="Cerrar actualización">×</button><div class="at">${esc(a.title)}</div><div class="am">${esc(a.message)}</div></div>`}
 function banner(){return pendBanner()+mbanner()}
 function mbanner(){const m=mem();let t,c;
  if(m.s==="trial"){t="Prueba gratis: "+(m.d===1?"te queda 1 día":"te quedan "+m.d+" días");c=""}
@@ -679,10 +680,10 @@ async function supportFlow(){openModal('<p class="mt">Cargando…</p>');let ms=[
  openModal(`<h2>Soporte</h2><p class="mt">Cuéntanos tu queja, duda o sugerencia.</p><textarea id="sm" maxlength="1000" placeholder="Escribe tu mensaje"></textarea><div class="mf"><button class="btn g" data-close>Cerrar</button><button class="btn" id="ss">Enviar</button></div><div style="margin-top:8px">${urg}</div>${ms.length?`<h2 style="margin-top:16px">Tus mensajes</h2>${ms.map(m=>`<div class="sm"><div class="mt">${fmtd(m.t)} · ${SL[m.status]||"Enviado"}</div><div>${esc(m.text)}</div>${m.reply?`<div class="rp"><div class="mt">Respuesta de soporte</div>${esc(m.reply)}</div>`:""}</div>`).join("")}`:""}`);
  $("#ss").onclick=()=>{const t=$("#sm").value.trim();if(!t)return toast("Escribe tu mensaje");$("#ss").disabled=true;
   FB.sendMessage(t).then(()=>{toast("Mensaje enviado");supportFlow()}).catch(()=>{toast("No se pudo enviar. Intenta de nuevo");$("#ss").disabled=false})}}
-document.addEventListener("visibilitychange",()=>{if(!document.hidden&&window.FB&&FB.user&&FB.me)FB.refresh().then(render).catch(()=>{})});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&window.FB&&FB.user&&FB.me)FB.refresh().then(()=>FB.getConfig()).then(c=>{_cfg=c;render()}).catch(()=>{})});
 
 /* ===== EVENTOS ===== */
-const A={eliminarPrestamo,renovar,plan:planFlow,soporte:supportFlow,salir:()=>confirmBox("¿Cerrar sesión en este dispositivo?",()=>{closeModal();FB.signOut()},"Cerrar sesión"),eliminarCliente,recibo:i=>receiptModal(db.payments.find(p=>p.id===i)),go,nuevoCliente:()=>clientForm(),editCliente:i=>clientForm(i),prestar,editLoan,cobrar,ver,exportar,importar:()=>$("#file").click(),
+const A={cerrarActualizacion:async()=>{const a=_cfg&&_cfg.announcement;if(!a||!a.id)return;try{await FB.dismissAnnouncement(String(a.id));render()}catch(e){toast("No se pudo cerrar la actualización")}},eliminarPrestamo,renovar,plan:planFlow,soporte:supportFlow,salir:()=>confirmBox("¿Cerrar sesión en este dispositivo?",()=>{closeModal();FB.signOut()},"Cerrar sesión"),eliminarCliente,recibo:i=>receiptModal(db.payments.find(p=>p.id===i)),go,nuevoCliente:()=>clientForm(),editCliente:i=>clientForm(i),prestar,editLoan,cobrar,ver,exportar,importar:()=>$("#file").click(),
  demo:()=>confirmBox("Se agregarán 3 clientes de prueba. ¿Continuar?",demo,"Cargar"),
  borrar:()=>confirmBox("Se borrarán todos los clientes, préstamos y pagos. No se puede deshacer. ¿Descargaste un respaldo?",()=>{try{localStorage.removeItem(KEY)}catch(e){}db=empty();render();toast("Datos borrados")},"Sí, borrar todo")};
 document.addEventListener("click",e=>{
@@ -720,7 +721,7 @@ ${msg?`<div class="er">${esc(msg)}</div>`:""}
 let _lerr="";function startAuth(){FB.redirectResult().catch(e=>{_lerr="No se pudo iniciar sesión ("+(e.code||"error")+")"}).finally(()=>FB.onUser(async u=>{
  if(!u){db=empty();view="hoy";return loginScreen(_lerr)}
  document.body.classList.remove("lg"); $("#nav").innerHTML="";$("#app").innerHTML='<p class="mt" style="padding:20px">Cargando tus datos…</p>';
- try{await FB.ready(u);const raw=await FB.loadData();let d=null;try{d=raw?JSON.parse(raw):null}catch(x){}
+ try{await FB.ready(u);try{_cfg=await FB.getConfig()}catch(x){_cfg=null}const raw=await FB.loadData();let d=null;try{d=raw?JSON.parse(raw):null}catch(x){}
   db=valid(d)?norm(d):empty();render()}catch(e){loginScreen("No se pudieron cargar tus datos. Revisa tu conexión.")}}))}
 $("#brand").innerHTML=logo();
 if(location.protocol==="file:"){$("#app").innerHTML='<div class="card"><h2>Abre el enlace de la app</h2><p class="mt">Este archivo no funciona abierto desde Descargas. Súbelo a GitHub y abre tu enlace de Vercel.</p></div>'}else{pwa();$("#app").innerHTML='<p class="mt" style="padding:20px">Cargando…</p>';
