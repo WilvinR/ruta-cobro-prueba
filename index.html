@@ -278,8 +278,8 @@ const daysLate=l=>{const[a,b,c]=parts(l.nextDate),[x,y,z]=parts(today());return 
 const tagL=l=>{const s=status(l);if(s!=="Atrasado")return tag(s);const n=daysLate(l);return`<span class="tag t-er">Atrasado ${n} ${n===1?"día":"días"}</span>`};
 const tag=s=>`<span class="tag ${{"Al día":"t-ok","Vence hoy":"t-wn","Atrasado":"t-er","Liquidado":"t-mt"}[s]}">${s}</span>`;
 function toast(m){const t=document.createElement("div");t.className="toast";t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2500)}
-function openModal(h){$("#md").innerHTML=h;$("#ov").classList.add("on")}
-function closeModal(){$("#ov").classList.remove("on")}
+function openModal(h){document.querySelector(".client-actions-float")?.remove();$("#md").innerHTML=h;$("#ov").classList.add("on")}
+function closeModal(){$("#ov").classList.remove("on");document.querySelector("body > .client-actions-float")?.remove()}
 function confirmBox(msg,ok,label){openModal(`<h2>Confirmar</h2><p>${msg}</p><div class="mf"><button class="btn g" data-close>Cancelar</button><button class="btn d" id="cok">${label}</button></div>`);$("#cok").onclick=()=>{closeModal();ok()}}
 
 /* ===== LÓGICA ===== */
@@ -613,6 +613,7 @@ function ver(cid){
  ${ls.length?ls.map(l=>`<div class="loan-card"><div class="loan-info"><div><div class="loan-title"><b>${money(l.capital)}</b></div><div class="loan-meta"><div class="mt">${desc(l)} · ${FL[l.freq].toLowerCase()}</div><div class="mt">Debe <b style="color:var(--tx)">${money(balance(l))}</b></div></div></div><div class="loan-meta"><div class="mt">Próximo cobro</div><div>${isDone(l)?"Liquidado":fdate(l.nextDate)}</div><div>${isDone(l)?"":status(l)}</div></div></div><div class="loan-actions"><button class="btn g" data-a="editLoan" data-id="${l.id}">Editar</button>${isDone(l)?"":`<button class="btn" data-a="cobrar" data-id="${l.id}">Cobrar</button><button class="btn g" data-a="renovar" data-id="${l.id}">Renovar</button>`}<button class="btn d" data-a="eliminarPrestamo" data-id="${l.id}">Eliminar</button></div></div>`).join(""):`<div class="empty">Este cliente todavía no tiene préstamos.</div>`}
  <div class="client-section-title">Movimientos</div>${ps.length?`<div class="card movements-list" style="margin-bottom:0">${ps.map(p=>`<div class="it"><div class="grow"><div>${fdate(p.date)} · ${concept(p)}</div><div class="mt">${esc(p.note||"")}</div></div><div style="text-align:right"><b>${money(p.interest+p.capital)}</b><div class="mt">Capital ${money(p.capital)}</div><div class="mt" style="color:var(--ok)">Ganancia ${money(p.interest)}</div></div><button class="btn s g" data-a="recibo" data-id="${p.id}">Recibo</button></div>`).join("")}</div>`:`<div class="mt">Sin movimientos.</div>`}
  <div class="client-actions-space"></div></div>`);
+ const actions=$("#md .client-actions-float");if(actions)document.body.appendChild(actions);
 }
 /* ===== RESPALDO ===== */
 const loadXL=()=>window.ExcelJS?Promise.resolve():new Promise((ok,no)=>{const x=document.createElement("script");x.src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js";x.onload=ok;x.onerror=no;document.head.appendChild(x)});
