@@ -97,6 +97,9 @@ table{width:100%;border-collapse:collapse;font-size:13px}th{color:var(--mt);font
 
 
 .mb{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--bl);background:#0b1730;border-radius:14px;padding:10px 12px;margin-bottom:12px;font-size:14.5px}
+.update-card{position:relative;background:linear-gradient(135deg,rgba(47,123,255,.13),rgba(9,17,31,.82));border:1px solid rgba(92,200,255,.42);border-radius:18px;padding:16px 52px 16px 16px;margin-bottom:14px;box-shadow:0 8px 24px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.08)}
+.update-card h2{margin:0 0 7px;color:var(--ce);font-size:17px;line-height:1.3;padding-right:8px}.update-card p{color:var(--tx);font-size:14px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}.update-close{position:absolute;top:11px;right:11px;width:34px;height:34px;border:0;border-radius:50%;background:#b63f49;color:#fff;font-size:21px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.25)}.update-close:active{transform:scale(.94)}
+
 .mb.wn{border-color:var(--wn);background:#241a08}.mb.er{border-color:var(--er);background:#2a1214}
 a.btn{display:inline-block;text-decoration:none;text-align:center}
 .pl{display:flex;align-items:center;gap:12px;border:1px solid var(--bd);border-radius:14px;padding:12px;margin-bottom:10px;cursor:pointer}
@@ -161,6 +164,7 @@ window.FB={
  signOut:()=>{me=null;return signOut(auth)},
  refresh:async()=>{if(auth.currentUser)await window.FB.ready(auth.currentUser)},
  getConfig:async()=>{const s=await getDoc(doc(fs,"config","app"));return s.exists()?s.data():{}},
+ markAnnouncementSeen:async id=>{if(!auth.currentUser||!id)return;await updateDoc(doc(fs,"users",auth.currentUser.uid),{lastAnnouncementSeen:String(id)});if(me)me.lastAnnouncementSeen=String(id)},
  get user(){return auth.currentUser},
  setPending:(plan,amount)=>{me.pending=true;return setDoc(doc(fs,"pendientes",auth.currentUser.uid),{uid:auth.currentUser.uid,code:me.code,name:me.name,plan,amount,sentAt:serverTimestamp()})},
  sendMessage:text=>addDoc(collection(fs,"mensajes"),{uid:auth.currentUser.uid,code:me.code,name:me.name,email:me.email,text,createdAt:serverTimestamp(),status:"nuevo"}),
@@ -223,7 +227,10 @@ window.dispatchEvent(new Event("fb-ready"));
 "use strict";
 const KEY="rutacobro_rd_v1",BKEY="rutacobro_rd_respaldo_previo";
 const FREQ={diario:1,semanal:7,quincenal:15,mensual:30},FL={diario:"Diario",semanal:"Semanal",quincenal:"Quincenal",mensual:"Mensual"};
-let db=empty(),view="hoy",q="",per="todo",rp="y"+new Date().getFullYear(),rd1="",rd2="";
+let db=empty(),view="hoy",q="",per="todo",rp="y"+new Date().getFullYear(),rd1="",rd2="",announcement=null;
+function announcementKey(a){const raw=String(a?.id||((a?.title||"")+"|"+(a?.message||"")));let h=0;for(let i=0;i<raw.length;i++)h=((h<<5)-h+raw.charCodeAt(i))|0;return String(a?.id||h)}
+function updateCard(){const a=announcement;if(!a||(!String(a.title||"").trim()&&!String(a.message||"").trim()))return"";const id=announcementKey(a),seen=String((window.FB&&FB.me&&FB.me.lastAnnouncementSeen)||"");if(seen===id)return"";return`<div class="update-card"><button class="update-close" type="button" data-announcement-close aria-label="Cerrar actualización">×</button>${a.title?`<h2>${esc(a.title)}</h2>`:""}${a.message?`<p>${esc(a.message)}</p>`:""}</div>`}
+async function closeAnnouncement(){if(!announcement)return;const id=announcementKey(announcement);announcement=null;render();try{await FB.markAnnouncementSeen(id)}catch(e){}}
 function empty(){return{clients:[],loans:[],payments:[],settings:{}}}
 function valid(d){return d&&typeof d==="object"&&["clients","loans","payments"].every(k=>Array.isArray(d[k]))}
 function load(){try{const d=JSON.parse(localStorage.getItem(KEY));return valid(d)?norm(d):empty()}catch(e){return empty()}}
@@ -382,7 +389,7 @@ const NAV=[["hoy","Hoy"],["clientes","Clientes"],["historial","Historial"],["res
 function render(){
  const nl=active().filter(l=>l.nextDate<today()).length;
  $("#nav").innerHTML=NAV.map(([k,l])=>`<button data-a="go" data-id="${k}" class="${view===k?"on":""}">${l}${k==="hoy"&&nl?`<span class="bdg">${nl}</span>`:""}</button>`).join("");
- document.body.classList.toggle("ro",locked());$("#app").innerHTML=banner()+VIEWS[view]();
+ document.body.classList.toggle("ro",locked());$("#app").innerHTML=updateCard()+banner()+VIEWS[view]();
  const i=$("#q");if(i)i.oninput=e=>{q=e.target.value;const p=e.target.selectionStart;render();const n=$("#q");n.focus();n.setSelectionRange(p,p)};
  const p=$("#per");if(p)p.onchange=e=>{per=e.target.value;render()};
  const rs=$("#rp");if(rs)rs.onchange=e=>{rp=e.target.value;render()};
@@ -686,6 +693,7 @@ const A={eliminarPrestamo,renovar,plan:planFlow,soporte:supportFlow,salir:()=>co
  demo:()=>confirmBox("Se agregarán 3 clientes de prueba. ¿Continuar?",demo,"Cargar"),
  borrar:()=>confirmBox("Se borrarán todos los clientes, préstamos y pagos. No se puede deshacer. ¿Descargaste un respaldo?",()=>{try{localStorage.removeItem(KEY)}catch(e){}db=empty();render();toast("Datos borrados")},"Sí, borrar todo")};
 document.addEventListener("click",e=>{
+ if(e.target.closest("[data-announcement-close]")){closeAnnouncement();return}
  if(e.target.closest("[data-close]")||e.target.id==="ov")return closeModal();
  const b=e.target.closest("[data-a]");if(!b||!A[b.dataset.a])return;
  const a=b.dataset.a;if(["go","ver"].indexOf(a)<0&&["editCliente","prestar","editLoan"].indexOf(a)>=0)closeModal();
@@ -718,9 +726,9 @@ ${msg?`<div class="er">${esc(msg)}</div>`:""}
 <p class="fine">Inicia sesión con tu cuenta de Google de siempre.</p></div></div>`;
  $("#gl").onclick=()=>FB.signIn().catch(e=>{if(e.code!=="auth/popup-closed-by-user"&&e.code!=="auth/cancelled-popup-request")loginScreen("No se pudo iniciar sesión. Intenta de nuevo.")})}
 let _lerr="";function startAuth(){FB.redirectResult().catch(e=>{_lerr="No se pudo iniciar sesión ("+(e.code||"error")+")"}).finally(()=>FB.onUser(async u=>{
- if(!u){db=empty();view="hoy";return loginScreen(_lerr)}
+ if(!u){db=empty();announcement=null;view="hoy";return loginScreen(_lerr)}
  document.body.classList.remove("lg"); $("#nav").innerHTML="";$("#app").innerHTML='<p class="mt" style="padding:20px">Cargando tus datos…</p>';
- try{await FB.ready(u);const raw=await FB.loadData();let d=null;try{d=raw?JSON.parse(raw):null}catch(x){}
+ try{await FB.ready(u);try{const cfg=await FB.getConfig();announcement=cfg&&cfg.announcement?cfg.announcement:null}catch(x){announcement=null}const raw=await FB.loadData();let d=null;try{d=raw?JSON.parse(raw):null}catch(x){}
   db=valid(d)?norm(d):empty();render()}catch(e){loginScreen("No se pudieron cargar tus datos. Revisa tu conexión.")}}))}
 $("#brand").innerHTML=logo();
 if(location.protocol==="file:"){$("#app").innerHTML='<div class="card"><h2>Abre el enlace de la app</h2><p class="mt">Este archivo no funciona abierto desde Descargas. Súbelo a GitHub y abre tu enlace de Vercel.</p></div>'}else{pwa();$("#app").innerHTML='<p class="mt" style="padding:20px">Cargando…</p>';
