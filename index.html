@@ -252,7 +252,7 @@ const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&
 const client=id=>db.clients.find(c=>c.id===id),loan=id=>db.loans.find(l=>l.id===id);
 const cname=id=>client(id)?.name||"(eliminado)";
 const sum=(a,f)=>r2(a.reduce((s,x)=>s+f(x),0));
-const active=()=>db.loans.filter(l=>!isDone(l));
+const active=()=>db.loans.filter(l=>!l.renewed&&!isDone(l));
 const byDate=(a,b)=>a.nextDate.localeCompare(b.nextDate);
 function status(l){if(isDone(l))return"Liquidado";const t=today();return l.nextDate<t?"Atrasado":l.nextDate===t?"Vence hoy":"Al día"}
 const daysLate=l=>{const[a,b,c]=parts(l.nextDate),[x,y,z]=parts(today());return Math.max(Math.round((Date.UTC(x,y-1,z)-Date.UTC(a,b-1,c))/864e5),0)};
@@ -344,7 +344,7 @@ clientes(){
 historial(){
  const t=today(),ps=db.payments.filter(p=>inPer(p.date)).sort((a,b)=>b.date.localeCompare(a.date)),o=(v,l)=>`<option value="${v}" ${per===v?"selected":""}>${l}</option>`;
  return`<h1>Historial</h1>
- <div class="card"><select id="per" style="margin-bottom:8px">${o("hoy","Hoy")}${o("semana","Esta semana")}${o("mes","Este mes")}${o("todo","Todo el tiempo")}</select>${ps.length?`<div class="mt" style="margin-bottom:4px">${ps.length} ${ps.length===1?"movimiento":"movimientos"} · ${money(sum(ps,p=>p.interest+p.capital))}</div>`:""}${ps.length?ps.slice(0,80).map(p=>`<div class="it"><div class="grow"><div class="nm" style="cursor:default">${esc(cname(p.clientId))}</div><div class="mt">${fdate(p.date)} · ${concept(p)}${p.renewal?" · Dinero nuevo "+money(p.investment||0):p.note?" · "+esc(p.note):""}</div></div><div style="text-align:right"><b>${money(p.interest+p.capital)}</b><div class="mt">Capital ${money(p.capital)}</div><div class="mt" style="color:var(--ok)">Ganancia ${money(p.interest)}</div></div></div>`).join(""):`<div class="empty">Sin movimientos en este período.</div>`}</div>`;
+ <div class="card"><select id="per" style="margin-bottom:8px">${o("hoy","Hoy")}${o("semana","Esta semana")}${o("mes","Este mes")}${o("todo","Todo el tiempo")}</select>${ps.length?`<div class="mt" style="margin-bottom:4px">${ps.length} ${ps.length===1?"movimiento":"movimientos"} · ${money(sum(ps,p=>p.interest+p.capital))}</div>`:""}${ps.length?ps.slice(0,80).map(p=>`<div class="it"><div class="grow"><div class="nm" style="cursor:default">${esc(cname(p.clientId))}</div><div class="mt">${fdate(p.date)} · ${concept(p)}${p.renewal?" · Nuevo préstamo "+money(p.renewalAmount||0)+" · Entregado "+money(p.investment||0):p.note?" · "+esc(p.note):""}</div></div><div style="text-align:right"><b>${money(p.interest+p.capital)}</b><div class="mt">Capital ${money(p.capital)}</div><div class="mt" style="color:var(--ok)">Ganancia ${money(p.interest)}</div></div></div>`).join(""):`<div class="empty">Sin movimientos en este período.</div>`}</div>`;
 },
 resumen(){
  const t=today(),cy=String(new Date().getFullYear()),yrs=new Set([cy]);
@@ -357,7 +357,7 @@ resumen(){
  else if(isY){f=Y+"-01-01";h=Y+"-12-31";pl=Y}
  else if(rp==="rango"){f=rd1||"0000-01-01";h=rd2||"9999-12-31";if(f>h){const x=f;f=h;h=x}pl=(rd1?fdate(f):"Inicio")+" – "+(rd2?fdate(h):"hoy")}
  const inR=d=>!!d&&(!f||(d>=f&&d<=h)),ps=db.payments.filter(p=>inR(p.date)),cap=sum(ps,p=>p.capital),gan=sum(ps,p=>p.interest);
- const inv=sum(db.loans.filter(l=>inR(l.startDate)),l=>r2(l.initialCapital==null?l.capital:l.initialCapital))+sum(db.loans.flatMap(l=>(l.renewals||[]).filter(x=>inR(x.date))),x=>x.capital),act=active(),late=act.filter(l=>l.nextDate<t),calle=sum(act,capLeft);
+ const inv=sum(db.loans.filter(l=>inR(l.startDate)),l=>r2(l.cashInvested==null?(l.initialCapital==null?l.capital:l.initialCapital):l.cashInvested)),act=active(),late=act.filter(l=>l.nextDate<t),calle=sum(act,capLeft);
  const ganPend=sum(act.filter(l=>l.type==="c"),l=>Math.max(r2(l.total-l.paid-capLeft(l)),0));
  const MN=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"],rows=[],mrow=(lb,k)=>{const m=db.payments.filter(p=>p.date.slice(0,7)===k),c=sum(m,p=>p.capital),g=sum(m,p=>p.interest);return`<tr><td>${lb}</td><td><b>${money(c+g)}</b></td><td>${money(c)}</td><td style="color:var(--ok)">${money(g)}</td></tr>`};
  if(isY){for(let m=0;m<12;m++){const k=Y+"-"+pad(m+1);rows.push(k>t.slice(0,7)?`<tr><td>${MN[m]}</td><td class="mt">—</td><td class="mt">—</td><td class="mt">—</td></tr>`:mrow(MN[m],k))}}
@@ -492,22 +492,21 @@ function cobrar(id){
  fm.onsubmit=e=>{e.preventDefault();const{i,c}=vals(),items=[];if(fm.i.value==="")items.push([fm.i,"Monto obligatorio"]);if(!isC&&fm.c.value==="")items.push([fm.c,"Avance obligatorio (puede ser 0)"]);if(fm.date.value==="")items.push([fm.date,"Fecha obligatoria"]);if(!finishValidation(fm,items))return;const r=sim();if(!r.ok){toast("El monto no es válido");return}const p=pay(l,fm.date.value,r2(r.i),r2(r.c),fm.note.value.trim(),kind());render();receiptModal(p,"Cobro guardado")};
 }
 function renovar(id){
- const l=loan(id),c=client(l.clientId);if(!l||!c||isDone(l))return toast("Este préstamo no está activo");
- openModal(`<h2>Renovar préstamo</h2><p class="mt">${esc(c.name)} · se mantiene el próximo cobro: ${fdate(l.nextDate)}</p><form class="f" id="fm"><div><label>Dinero nuevo que entrego (RD$) *</label><input name="newMoney" type="number" step="0.01" min="0" inputmode="decimal"></div><div><label>% de ganancia del monto nuevo *</label><input name="pct" type="number" step="0.01" min="0" inputmode="decimal"></div><div><label>Número de cuotas *</label><input name="n" type="number" step="1" min="1" inputmode="numeric"></div><div><label>Fecha de renovación *</label><input name="date" type="date" value="${today()}"></div><div class="live renew-preview"><div><span>Debe actual</span><b>${money(balance(l))}</b></div><div><span>Nuevo capital</span><b id="rvCap">-</b></div><div><span>Nuevo total</span><b id="rvTot">-</b></div><div id="rvInstallments"><span>Nuevas cuotas</span><b id="rvN">-</b></div><div id="rvPayment"><span>Nueva cuota</span><b id="rvCuota">-</b></div></div><div class="mf"><button type="button" class="btn g" data-close>Cancelar</button><button class="btn" id="rvSave">Renovar</button></div></form>`);
- const fm=$("#fm"),upd=()=>{const nm=num(fm.newMoney.value),pct=num(fm.pct.value),n=parseInt(fm.n.value)||0,old=balance(l),base=r2(old+nm),gain=r2(base*pct/100),tot=l.type==="c"?r2(base+gain):base;$("#rvCap").textContent=money(base);$("#rvTot").textContent=l.type==="c"?money(tot):money(tot);$("#rvInstallments").style.display=l.type==="c"?"flex":"none";$("#rvPayment").style.display=l.type==="c"?"flex":"none";$("#rvN").textContent=l.type==="c"&&n?n:"-";$("#rvCuota").textContent=l.type==="c"&&n?money(tot/n):"-"};
+ const l=loan(id),c=l&&client(l.clientId);if(!l||!c||l.renewed||isDone(l))return toast("Este préstamo no está activo");
+ const oldNext=l.nextDate,oldBalance=r2(balance(l)),isC=l.type==="c";
+ openModal(`<h2>Renovar préstamo</h2><p class="mt">${esc(c.name)} · se mantiene el próximo cobro: ${fdate(oldNext)}</p><form class="f" id="fm"><div><label>Monto del nuevo préstamo (RD$) *</label><input name="newMoney" type="number" step="0.01" min="0" inputmode="decimal"></div><div><label>Nueva tasa / ganancia (%) *</label><input name="pct" type="number" step="0.01" min="0" inputmode="decimal"></div>${isC?`<div><label>Número de cuotas *</label><input name="n" type="number" step="1" min="1" inputmode="numeric"></div>`:""}<div><label>Fecha de renovación *</label><input name="date" type="date" value="${today()}"></div><div class="live renew-preview"><div><span>Saldo pendiente anterior</span><b>${money(oldBalance)}</b></div><div><span>Nuevo préstamo</span><b id="rvCap">-</b></div><div><span>Dinero a entregar</span><b id="rvCash">-</b></div><div><span>Nueva ganancia</span><b id="rvGain">-</b></div><div><span>Nuevo total</span><b id="rvTot">-</b></div><div id="rvInstallments"><span>Nuevas cuotas</span><b id="rvN">-</b></div><div id="rvPayment"><span>Nueva cuota</span><b id="rvCuota">-</b></div></div><div class="mf"><button type="button" class="btn g" data-close>Cancelar</button><button class="btn" id="rvSave">Renovar</button></div></form>`);
+ const fm=$("#fm"),upd=()=>{const nm=num(fm.newMoney.value),pct=num(fm.pct.value),n=isC?(parseInt(fm.n.value)||0):0,newGain=r2(nm*pct/100),cash=r2(nm-oldBalance),total=r2(nm+newGain);$("#rvCap").textContent=money(nm);$("#rvCash").textContent=cash>=0?money(cash):"-";$("#rvGain").textContent=money(newGain);$("#rvTot").textContent=money(total);if(isC){$("#rvInstallments").style.display="flex";$("#rvPayment").style.display="flex";$("#rvN").textContent=n||"-";$("#rvCuota").textContent=n?money(total/n):"-"}};
  fm.addEventListener("input",upd);upd();
- fm.onsubmit=e=>{e.preventDefault();const items=[];if(!(num(fm.newMoney.value)>0))items.push([fm.newMoney,"Dinero nuevo obligatorio"]);if(fm.pct.value===""||num(fm.pct.value)<0)items.push([fm.pct,"% obligatorio"]);if(fm.n.value===""||!Number.isInteger(Number(fm.n.value))||Number(fm.n.value)<1)items.push([fm.n,"Cuotas obligatorias"]);if(!fm.date.value)items.push([fm.date,"Fecha obligatoria"]);if(!finishValidation(fm,items))return;
-  const nm=r2(num(fm.newMoney.value)),pct=r2(num(fm.pct.value)),n=Number(fm.n.value),oldBalance=balance(l),oldNext=l.nextDate,renewDate=fm.date.value;
-  if(l.type==="c"){
-    /* En cuotas, la deuda actual pasa a formar parte de la nueva base. El nuevo % se calcula sobre deuda actual + dinero nuevo. */
-    const base=r2(oldBalance+nm),gain=r2(base*pct/100),total=r2(base+gain);
-    Object.assign(l,{capital:base,total,cu:r2(total/n),gan:gain,n,paid:0,k:0,credit:0,capPaid:0,pct:r2(pct),nextDate:oldNext});
-  }else{
-    /* En rédito, los réditos nunca se suman al capital. Solo aumenta el capital con el dinero nuevo y se recalcula el rédito sobre el nuevo capital. */
-    const newPrincipal=r2(l.principal+nm),newFee=r2(newPrincipal*pct/100);
-    Object.assign(l,{capital:newPrincipal,principal:newPrincipal,fee:newFee,rate:pct,nextDate:oldNext,credit:l.credit||0,capPaid:l.capPaid||0});
-  }
-  l.renewals=[...(l.renewals||[]),{date:renewDate,capital:nm,pct}];db.payments.push({id:uid(),loanId:l.id,clientId:l.clientId,date:renewDate,interest:0,capital:0,type:"Renovación",note:"Dinero nuevo entregado en renovación",investment:nm,bal:balance(l),next:l.nextDate,renewal:true});
+ fm.onsubmit=e=>{e.preventDefault();const items=[],nm=num(fm.newMoney.value),pct=num(fm.pct.value);if(!(nm>0))items.push([fm.newMoney,"Monto obligatorio"]);if(fm.pct.value===""||pct<0)items.push([fm.pct,"% obligatorio"]);if(isC&&(fm.n.value===""||!Number.isInteger(Number(fm.n.value))||Number(fm.n.value)<1))items.push([fm.n,"Cuotas obligatorias"]);if(!fm.date.value)items.push([fm.date,"Fecha obligatoria"]);if(!finishValidation(fm,items))return;
+  const newAmount=r2(nm),rate=r2(pct),renewDate=fm.date.value,newGain=r2(newAmount*rate/100),cash=r2(newAmount-oldBalance);
+  if(cash<0){fieldError(fm.newMoney,"Debe ser mayor o igual al saldo pendiente");fm.newMoney.focus();return}
+  const oldLoanId=l.id;
+  l.renewed=true;l.renewedAt=renewDate;l.renewedTo=null;
+  const newId=uid(),o={id:newId,clientId:l.clientId,type:l.type,capital:newAmount,initialCapital:newAmount,cashInvested:cash,freq:l.freq,startDate:renewDate,nextDate:oldNext,dom:parts(renewDate)[2],wd:l.wd,note:l.note||"",credit:0,capPaid:0,renewedFrom:oldLoanId};
+  if(isC){const n=Number(fm.n.value),total=r2(newAmount+newGain);Object.assign(o,{pct:rate,n,total,cu:r2(total/n),gan:r2(newGain/n),rcredit:0,paid:0,k:0,principal:0})}
+  else{Object.assign(o,{principal:newAmount,fee:newGain,rate:rate})}
+  l.renewedTo=newId;db.loans.push(o);
+  db.payments.push({id:uid(),loanId:newId,clientId:l.clientId,date:renewDate,interest:0,capital:0,type:"Renovación",note:"Renovación: nuevo préstamo "+money(newAmount)+"; saldo anterior descontado "+money(oldBalance),investment:cash,renewalAmount:newAmount,oldBalance,renewal:true,bal:balance(o),next:o.nextDate});
   save();closeModal();render();toast("Préstamo renovado")};
 }
 /* ===== RECIBO POR WHATSAPP (enlace wa.me: abre el chat del cliente con el mensaje listo) ===== */
@@ -528,7 +527,7 @@ function phoneWa(ph){const d=String(ph||"").replace(/\D/g,"");if(d.length===10)r
 function receiptText(p){
  const c=client(p.clientId);
  const L=["*Recibo de pago - "+(c?c.name:"")+"*","","Fecha: "+fdate(p.date),"Concepto: "+concept(p)];
- if(p.renewal)L.push("Dinero nuevo entregado: "+money(p.investment||0));
+ if(p.renewal){L.push("Nuevo préstamo: "+money(p.renewalAmount||0),"Saldo anterior descontado: "+money(p.oldBalance||0),"Dinero entregado: "+money(p.investment||0));}
  if(p.type==="Mixto")L.push("Rédito: "+money(p.interest),"Avance: "+money(p.capital));
  L.push("","Monto recibido: *"+money(p.interest+p.capital)+"*");
  if(p.bal!=null)L.push("","Balance pendiente: *"+money(p.bal)+"*");
@@ -542,7 +541,7 @@ function receiptModal(p,title){
  openModal(`<h2>${title||"Recibo"}</h2><pre style="white-space:pre-wrap;font:inherit;font-size:14px;background:#050b16;border:1px solid var(--bd);border-radius:12px;padding:12px">${esc(t)}</pre>${n?`<p class="mt" style="margin-top:8px">Se enviará al WhatsApp de ${esc(c.name)} (+${n}).</p>`:`<p class="mt" style="margin-top:8px;color:var(--wn)">Este cliente no tiene un teléfono válido guardado. WhatsApp te dejará escoger el contacto.</p>`}<div class="mf"><button class="btn g" data-close>Cerrar</button><a class="btn" href="${esc(url)}" target="_blank" rel="noopener" style="text-decoration:none;display:inline-block">Enviar por WhatsApp</a></div>`);
 }
 function ver(cid){
- const c=client(cid),ls=db.loans.filter(l=>l.clientId===cid).sort(byDate),ps=db.payments.filter(p=>p.clientId===cid).sort((a,b)=>b.date.localeCompare(a.date));
+ const c=client(cid),ls=db.loans.filter(l=>l.clientId===cid&&!l.renewed).sort(byDate),ps=db.payments.filter(p=>p.clientId===cid).sort((a,b)=>b.date.localeCompare(a.date));
  openModal(`<h2>${esc(c.name)}</h2><div class="mt">${esc(c.phone||"Sin teléfono")} · ${esc(c.ref||"Sin referencia")}</div>
  <div class="card client-summary"><div class="client-stat"><div class="l">Debe</div><div class="v">${money(sum(active().filter(l=>l.clientId===cid),balance))}</div></div><div class="client-stat"><div class="l">Ganancia cobrada</div><div class="v">${money(sum(ps,p=>p.interest))}</div></div></div>
  <div class="client-section-title">Préstamos <span class="mt" style="font-size:14px;font-weight:500">(${ls.length})</span></div>
