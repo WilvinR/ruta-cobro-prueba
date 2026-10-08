@@ -289,12 +289,12 @@ function pay(l,date,intr,cap,note,kind){
  db.payments.push(p);save();return p;
 }
 function newLoan(clientId,ln,note){
- const o={id:uid(),clientId,type:ln.t,capital:r2(ln.cap),freq:ln.freq,startDate:ln.date,nextDate:ln.first||firstDue(ln.freq,ln.date,ln.wd==null?5:ln.wd),dom:parts(ln.date)[2],wd:ln.wd==null?5:ln.wd,note:note||"",credit:0,capPaid:0};
+ const o={id:uid(),clientId,type:ln.t,capital:r2(ln.cap),initialCapital:r2(ln.cap),freq:ln.freq,startDate:ln.date,nextDate:ln.first||firstDue(ln.freq,ln.date,ln.wd==null?5:ln.wd),dom:parts(ln.date)[2],wd:ln.wd==null?5:ln.wd,note:note||"",credit:0,capPaid:0};
  if(ln.t==="c"){const total=r2(ln.cap*(1+ln.pct/100));Object.assign(o,{pct:ln.pct,n:ln.n,total,cu:r2(total/ln.n),gan:r2((total-ln.cap)/ln.n),rcredit:0,paid:0,k:0,principal:0})}
  else Object.assign(o,{principal:r2(ln.cap),fee:r2(ln.fee),rate:ln.fee/ln.cap*100});
  db.loans.push(o);
 }
-function norm(d){d.loans.forEach(l=>{if(!l.type){l.type="r";l.fee=r2(l.principal*l.rate/100);l.credit=0;l.capPaid=r2((l.capital||0)-l.principal)}if(l.type==="c"){if(!l.cu)l.cu=r2(l.total/l.n);if(l.gan==null)l.gan=r2((l.total-l.capital)/l.n);l.rcredit=l.rcredit||0}});d.settings=d.settings||{};return d}
+function norm(d){d.loans.forEach(l=>{if(l.initialCapital==null)l.initialCapital=r2(l.capital||0);if(!l.type){l.type="r";l.fee=r2(l.principal*l.rate/100);l.credit=0;l.capPaid=r2((l.capital||0)-l.principal)}if(l.type==="c"){if(!l.cu)l.cu=r2(l.total/l.n);if(l.gan==null)l.gan=r2((l.total-l.capital)/l.n);l.rcredit=l.rcredit||0}});d.settings=d.settings||{};return d}
 function inPer(d){const t=today();if(per==="hoy")return d===t;if(per==="semana"){const n=new Date(),k=(n.getDay()+6)%7;return d>=addDays(t,-k)&&d<=t}if(per==="mes")return d.slice(0,7)===t.slice(0,7);return true}
 
 /* ===== PANTALLAS ===== */
@@ -335,7 +335,7 @@ resumen(){
  else if(isY){f=Y+"-01-01";h=Y+"-12-31";pl=Y}
  else if(rp==="rango"){f=rd1||"0000-01-01";h=rd2||"9999-12-31";if(f>h){const x=f;f=h;h=x}pl=(rd1?fdate(f):"Inicio")+" – "+(rd2?fdate(h):"hoy")}
  const inR=d=>!!d&&(!f||(d>=f&&d<=h)),ps=db.payments.filter(p=>inR(p.date)),cap=sum(ps,p=>p.capital),gan=sum(ps,p=>p.interest);
- const inv=sum(db.loans.filter(l=>inR(l.startDate)),l=>l.capital)+sum(db.loans.flatMap(l=>(l.renewals||[]).filter(x=>inR(x.date))),x=>x.capital),act=active(),late=act.filter(l=>l.nextDate<t),calle=sum(act,capLeft);
+ const inv=sum(db.loans.filter(l=>inR(l.startDate)),l=>r2(l.initialCapital==null?l.capital:l.initialCapital))+sum(db.loans.flatMap(l=>(l.renewals||[]).filter(x=>inR(x.date))),x=>x.capital),act=active(),late=act.filter(l=>l.nextDate<t),calle=sum(act,capLeft);
  const ganPend=sum(act.filter(l=>l.type==="c"),l=>Math.max(r2(l.total-l.paid-capLeft(l)),0));
  const MN=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"],rows=[],mrow=(lb,k)=>{const m=db.payments.filter(p=>p.date.slice(0,7)===k),c=sum(m,p=>p.capital),g=sum(m,p=>p.interest);return`<tr><td>${lb}</td><td><b>${money(c+g)}</b></td><td>${money(c)}</td><td style="color:var(--ok)">${money(g)}</td></tr>`};
  if(isY){for(let m=0;m<12;m++){const k=Y+"-"+pad(m+1);rows.push(k>t.slice(0,7)?`<tr><td>${MN[m]}</td><td class="mt">—</td><td class="mt">—</td><td class="mt">—</td></tr>`:mrow(MN[m],k))}}
@@ -472,12 +472,19 @@ function cobrar(id){
 function renovar(id){
  const l=loan(id),c=client(l.clientId);if(!l||!c||isDone(l))return toast("Este préstamo no está activo");
  openModal(`<h2>Renovar préstamo</h2><p class="mt">${esc(c.name)} · se mantiene el próximo cobro: ${fdate(l.nextDate)}</p><form class="f" id="fm"><div><label>Dinero nuevo que entrego (RD$) *</label><input name="newMoney" type="number" step="0.01" min="0" inputmode="decimal"></div><div><label>% de ganancia del monto nuevo *</label><input name="pct" type="number" step="0.01" min="0" inputmode="decimal"></div><div><label>Número de cuotas *</label><input name="n" type="number" step="1" min="1" inputmode="numeric"></div><div><label>Fecha de renovación *</label><input name="date" type="date" value="${today()}"></div><div class="live"><div><span>Debe actual</span><b>${money(balance(l))}</b></div><div><span>Nuevo capital</span><b id="rvCap">-</b></div><div><span>Nuevo total</span><b id="rvTot">-</b></div></div><div class="mf"><button type="button" class="btn g" data-close>Cancelar</button><button class="btn" id="rvSave">Renovar</button></div></form>`);
- const fm=$("#fm"),upd=()=>{const nm=num(fm.newMoney.value),pct=num(fm.pct.value),n=parseInt(fm.n.value)||0,old=balance(l),gain=r2(nm*pct/100),tot=l.type==="c"?r2(old+nm+gain):r2(old+nm);$("#rvCap").textContent=money(l.type==="c"?capLeft(l)+nm:(l.principal+nm));$("#rvTot").textContent=l.type==="c"&&n?money(tot)+" · "+money(tot/n)+" por cuota":money(tot)};
+ const fm=$("#fm"),upd=()=>{const nm=num(fm.newMoney.value),pct=num(fm.pct.value),n=parseInt(fm.n.value)||0,old=balance(l),base=r2(old+nm),gain=r2(base*pct/100),tot=l.type==="c"?r2(base+gain):base;$("#rvCap").textContent=money(base);$("#rvTot").textContent=l.type==="c"&&n?money(tot)+" · "+money(tot/n)+" por cuota":money(tot)};
  fm.addEventListener("input",upd);upd();
  fm.onsubmit=e=>{e.preventDefault();const items=[];if(!(num(fm.newMoney.value)>0))items.push([fm.newMoney,"Dinero nuevo obligatorio"]);if(fm.pct.value===""||num(fm.pct.value)<0)items.push([fm.pct,"% obligatorio"]);if(fm.n.value===""||!Number.isInteger(Number(fm.n.value))||Number(fm.n.value)<1)items.push([fm.n,"Cuotas obligatorias"]);if(!fm.date.value)items.push([fm.date,"Fecha obligatoria"]);if(!finishValidation(fm,items))return;
-  const nm=r2(num(fm.newMoney.value)),pct=r2(num(fm.pct.value)),n=Number(fm.n.value),oldBalance=balance(l),gain=r2(nm*pct/100),oldNext=l.nextDate,renewDate=fm.date.value;
-  if(l.type==="c"){const total=r2(oldBalance+nm+gain),newCap=r2(capLeft(l)+nm);Object.assign(l,{capital:newCap,total,cu:r2(total/n),gan:r2((total-newCap)/n),n,paid:0,k:0,credit:0,capPaid:0,pct:r2((total/newCap-1)*100),startDate:renewDate,nextDate:oldNext,dom:parts(renewDate)[2],wd:l.wd});}
-  else{const newPrincipal=r2(l.principal+nm),newFee=r2(l.fee+gain);Object.assign(l,{capital:r2(l.capital+nm),principal:newPrincipal,fee:newFee,rate:r2(newFee/newPrincipal*100),startDate:renewDate,nextDate:oldNext,dom:parts(renewDate)[2],wd:l.wd,credit:l.credit||0,capPaid:l.capPaid||0});}
+  const nm=r2(num(fm.newMoney.value)),pct=r2(num(fm.pct.value)),n=Number(fm.n.value),oldBalance=balance(l),oldNext=l.nextDate,renewDate=fm.date.value;
+  if(l.type==="c"){
+    /* En cuotas, la deuda actual pasa a formar parte de la nueva base. El nuevo % se calcula sobre deuda actual + dinero nuevo. */
+    const base=r2(oldBalance+nm),gain=r2(base*pct/100),total=r2(base+gain);
+    Object.assign(l,{capital:base,total,cu:r2(total/n),gan:gain,n,paid:0,k:0,credit:0,capPaid:0,pct:r2(pct),nextDate:oldNext});
+  }else{
+    /* En rédito, los réditos nunca se suman al capital. Solo aumenta el capital con el dinero nuevo y se recalcula el rédito sobre el nuevo capital. */
+    const newPrincipal=r2(l.principal+nm),newFee=r2(newPrincipal*pct/100);
+    Object.assign(l,{capital:newPrincipal,principal:newPrincipal,fee:newFee,rate:pct,nextDate:oldNext,credit:l.credit||0,capPaid:l.capPaid||0});
+  }
   l.renewals=[...(l.renewals||[]),{date:renewDate,capital:nm,pct}];db.payments.push({id:uid(),loanId:l.id,clientId:l.clientId,date:renewDate,interest:0,capital:0,type:"Renovación",note:"Dinero nuevo entregado en renovación",investment:nm,bal:balance(l),next:l.nextDate,renewal:true});
   save();closeModal();render();toast("Préstamo renovado")};
 }
