@@ -82,6 +82,21 @@ table{width:100%;border-collapse:collapse;font-size:13px}th{color:var(--mt);font
 .client-close:active{transform:scale(.94)}
 .client-footer-actions .btn{width:100%;min-width:0;padding:9px 7px;font-size:13px}
 .client-footer-actions .btn.d{font-size:13px}
+.client-tools{position:sticky;top:8px;z-index:12;display:flex;justify-content:flex-end;gap:8px}
+.client-tools .client-close{position:static;margin-left:0}
+.vmenu{position:absolute;z-index:30;min-width:176px;right:0;display:flex;flex-direction:column;background:rgba(9,17,31,.97);border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:6px;box-shadow:0 10px 28px rgba(0,0,0,.45);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.client-tools .vmenu{top:42px}
+.vmenu.up{bottom:calc(100% + 6px)}
+.vmenu button{background:transparent;border:0;color:var(--tx);text-align:left;padding:11px 12px;border-radius:10px;font:inherit;font-size:14px;cursor:pointer}
+.vmenu button:active{background:rgba(255,255,255,.08)}
+.vmenu button.d{color:var(--er)}
+.vtabs{display:flex;gap:4px;background:rgba(9,17,31,.58);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:3px;margin:16px 0 10px}
+.vtabs button{flex:1;border:0;border-radius:999px;background:transparent;color:var(--mt);padding:9px 6px;font:inherit;font-weight:550;font-size:14px;cursor:pointer}
+.vtabs button.on{background:var(--p2);color:var(--ce);box-shadow:inset 0 0 0 1px var(--bd)}
+.loan-actions{position:relative}
+.loan-actions.v3{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 46px}
+.loan-actions.v1{grid-template-columns:minmax(0,1fr) 46px;align-items:center}
+.loan-actions .vdots{padding:8px 0;font-size:18px;line-height:1}
 .renew-preview{margin-top:2px}
 .renew-preview div{padding:4px 0}
 .renew-preview b{font-size:14px}
@@ -591,12 +606,13 @@ function receiptModal(p,title){
 }
 function ver(cid){
  const c=client(cid),ls=db.loans.filter(l=>l.clientId===cid&&!l.renewed).sort(byDate),ps=db.payments.filter(p=>p.clientId===cid).sort((a,b)=>{const d=b.date.localeCompare(a.date);return d||String(b.id||"").localeCompare(String(a.id||""))});
- openModal(`<div class="client-view"><button class="client-close" type="button" data-close aria-label="Cerrar">×</button><h2>${esc(c.name)}</h2><div class="mt">${esc(c.phone||"Sin teléfono")} · ${esc(c.ref||"Sin referencia")}</div>
+ const loansHtml=ls.length?ls.map(l=>{const dn=isDone(l);return`<div class="loan-card"><div class="loan-info"><div><div class="loan-title"><b>${money(l.capital)}</b></div><div class="loan-meta"><div class="mt">${desc(l)} · ${FL[l.freq].toLowerCase()}</div><div class="mt">Debe <b style="color:var(--tx)">${money(balance(l))}</b></div></div></div><div class="loan-meta"><div class="mt">Próximo cobro</div><div>${dn?"Liquidado":fdate(l.nextDate)}</div><div>${dn?"":status(l)}</div></div></div><div class="loan-actions ${dn?"v1":"v3"}">${dn?`<span class="mt">Préstamo liquidado</span>`:`<button class="btn" data-a="cobrar" data-id="${l.id}">Cobrar</button><button class="btn g" data-a="renovar" data-id="${l.id}">Renovar</button>`}<button class="btn g vdots" type="button" data-a="vmenu" data-id="lm${l.id}" aria-label="Más opciones">⋯</button><div class="vmenu up" id="lm${l.id}" hidden><button type="button" data-a="editLoan" data-id="${l.id}">Editar préstamo</button><button type="button" class="d" data-a="eliminarPrestamo" data-id="${l.id}">Eliminar préstamo</button></div></div></div>`}).join(""):`<div class="empty">Este cliente todavía no tiene préstamos.</div>`;
+ const movHtml=ps.length?`<div class="card movements-list" style="margin-bottom:0">${ps.map(p=>`<div class="it"><div class="grow"><div>${fdate(p.date)} · ${concept(p)}</div><div class="mt">${esc(p.note||"")}</div></div><div style="text-align:right"><b>${money(p.interest+p.capital)}</b><div class="mt">Capital ${money(p.capital)}</div><div class="mt" style="color:var(--ok)">Ganancia ${money(p.interest)}</div></div><button class="btn s g" data-a="recibo" data-id="${p.id}">Recibo</button></div>`).join("")}</div>`:`<div class="empty">Sin movimientos.</div>`;
+ openModal(`<div class="client-view"><div class="client-tools"><button class="client-close" type="button" data-a="vmenu" data-id="cm" aria-label="Más opciones">⋯</button><button class="client-close" type="button" data-close aria-label="Cerrar">×</button><div class="vmenu" id="cm" hidden><button type="button" data-a="editCliente" data-id="${cid}">Editar datos</button><button type="button" class="d" data-a="eliminarCliente" data-id="${cid}">Eliminar cliente</button></div></div><h2>${esc(c.name)}</h2><div class="mt">${esc(c.phone||"Sin teléfono")} · ${esc(c.ref||"Sin referencia")}</div>
  <div class="card client-summary"><div class="client-stat"><div class="l">Debe</div><div class="v">${money(sum(active().filter(l=>l.clientId===cid),balance))}</div></div><div class="client-stat"><div class="l">Ganancia cobrada</div><div class="v">${money(sum(ps,p=>p.interest))}</div></div></div>
- <div class="client-section-title">Préstamos <span class="mt" style="font-size:14px;font-weight:500">(${ls.length})</span></div>
- ${ls.length?ls.map(l=>`<div class="loan-card"><div class="loan-info"><div><div class="loan-title"><b>${money(l.capital)}</b></div><div class="loan-meta"><div class="mt">${desc(l)} · ${FL[l.freq].toLowerCase()}</div><div class="mt">Debe <b style="color:var(--tx)">${money(balance(l))}</b></div></div></div><div class="loan-meta"><div class="mt">Próximo cobro</div><div>${isDone(l)?"Liquidado":fdate(l.nextDate)}</div><div>${isDone(l)?"":status(l)}</div></div></div><div class="loan-actions"><button class="btn g" data-a="editLoan" data-id="${l.id}">Editar</button>${isDone(l)?"":`<button class="btn" data-a="cobrar" data-id="${l.id}">Cobrar</button><button class="btn g" data-a="renovar" data-id="${l.id}">Renovar</button>`}<button class="btn d" data-a="eliminarPrestamo" data-id="${l.id}">Eliminar</button></div></div>`).join(""):`<div class="empty">Este cliente todavía no tiene préstamos.</div>`}
- <div class="client-section-title">Movimientos</div>${ps.length?`<div class="card movements-list" style="margin-bottom:0">${ps.map(p=>`<div class="it"><div class="grow"><div>${fdate(p.date)} · ${concept(p)}</div><div class="mt">${esc(p.note||"")}</div></div><div style="text-align:right"><b>${money(p.interest+p.capital)}</b><div class="mt">Capital ${money(p.capital)}</div><div class="mt" style="color:var(--ok)">Ganancia ${money(p.interest)}</div></div><button class="btn s g" data-a="recibo" data-id="${p.id}">Recibo</button></div>`).join("")}</div>`:`<div class="mt">Sin movimientos.</div>`}
- <div class="client-footer-actions"><button class="btn g" type="button" data-close>Cerrar</button><button class="btn g" type="button" data-a="editCliente" data-id="${cid}">Editar datos</button><button class="btn" type="button" data-a="prestar" data-id="${cid}">Nuevo préstamo</button><button class="btn d" type="button" data-a="eliminarCliente" data-id="${cid}">Eliminar cliente</button></div></div>`);
+ <button class="btn" type="button" style="width:100%;margin-top:12px" data-a="prestar" data-id="${cid}">+ Nuevo préstamo</button>
+ <div class="vtabs"><button type="button" class="on" data-a="vtab" data-id="p">Préstamos (${ls.length})</button><button type="button" data-a="vtab" data-id="h">Historial (${ps.length})</button></div>
+ <div id="vt-p">${loansHtml}</div><div id="vt-h" hidden>${movHtml}</div></div>`);
 }
 /* ===== RESPALDO ===== */
 const loadXL=()=>window.ExcelJS?Promise.resolve():new Promise((ok,no)=>{const x=document.createElement("script");x.src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js";x.onload=ok;x.onerror=no;document.head.appendChild(x)});
@@ -714,11 +730,14 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden&&window.FB
 const A={cerrarActualizacion:async()=>{const a=_cfg&&_cfg.announcement;if(!a||!a.id)return;try{await FB.dismissAnnouncement(String(a.id));render()}catch(e){toast("No se pudo cerrar la actualización")}},eliminarPrestamo,renovar,plan:planFlow,soporte:supportFlow,salir:()=>confirmBox("¿Cerrar sesión en este dispositivo?",()=>{closeModal();FB.signOut()},"Cerrar sesión"),eliminarCliente,recibo:i=>receiptModal(db.payments.find(p=>p.id===i)),go,nuevoCliente:()=>clientForm(),editCliente:i=>clientForm(i),prestar,editLoan,cobrar,ver,exportar,importar:()=>$("#file").click(),
  demo:()=>confirmBox("Se agregarán 3 clientes de prueba. ¿Continuar?",demo,"Cargar"),
  borrar:()=>confirmBox("Se borrarán todos los clientes, préstamos y pagos. No se puede deshacer. ¿Descargaste un respaldo?",()=>{try{localStorage.removeItem(KEY)}catch(e){}db=empty();render();toast("Datos borrados")},"Sí, borrar todo")};
+A.vmenu=id=>{const m=document.getElementById(id);if(!m)return;const h=m.hidden;document.querySelectorAll(".vmenu").forEach(x=>x.hidden=true);m.hidden=!h};
+A.vtab=id=>{const p=id==="p";$("#vt-p").hidden=!p;$("#vt-h").hidden=p;document.querySelectorAll(".vtabs button").forEach(b=>b.classList.toggle("on",b.dataset.id===id))};
 document.addEventListener("click",e=>{
  if(e.target.closest("[data-close]")||e.target.id==="ov")return closeModal();
+ if(!e.target.closest('[data-a="vmenu"]'))document.querySelectorAll(".vmenu").forEach(m=>m.hidden=true);
  const b=e.target.closest("[data-a]");if(!b||!A[b.dataset.a])return;
  const a=b.dataset.a;if(["go","ver"].indexOf(a)<0&&["editCliente","prestar","editLoan"].indexOf(a)>=0)closeModal();
- if(locked()&&["go","exportar","salir","plan","recibo","soporte"].indexOf(a)<0){if(["editLoan","ver","cobrar"].indexOf(a)>=0)return roView(a,b.dataset.id);return toast("Membresía vencida: solo lectura")}
+ if(locked()&&["go","exportar","salir","plan","recibo","soporte","vmenu","vtab"].indexOf(a)<0){if(["editLoan","ver","cobrar"].indexOf(a)>=0)return roView(a,b.dataset.id);return toast("Membresía vencida: solo lectura")}
  A[a](b.dataset.id);
 });
 
