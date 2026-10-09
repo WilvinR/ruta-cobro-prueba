@@ -410,7 +410,7 @@ const loanFields=()=>`<div><label>Tipo de préstamo *</label><select name="t"><o
 <div class="f2 tr"><div><label>Rédito por cobro (RD$) *</label><input name="fee" type="number" step="0.01" min="0" inputmode="decimal"></div><div><label>Rédito (%) *</label><input name="rp" type="number" step="0.01" min="0" inputmode="decimal"></div></div>
 <div class="f2 tc" hidden><div><label>Ganancia total (%) *</label><input name="pct" type="number" step="0.01" min="0" inputmode="decimal"></div><div><label>Número de cuotas *</label><input name="n" type="number" step="1" min="1" inputmode="numeric"></div></div>
 <div class="f2"><div><label>Cobro *</label><select name="freq"><option value="">Selecciona</option>${freqSel("")}</select></div><div><label>Fecha de entrega *</label><input name="date" type="date" value="${today()}"></div></div>
-<div class="f2"><div class="wdw" hidden><label>Día de cobro * <span class="mt">(viernes por defecto)</span></label><select name="wd"><option value="">Selecciona</option>${["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"].map((n,i)=>`<option value="${i}">${n}</option>`).join("")}</select></div><div class="cdw" hidden><label>Días de cobro *</label><button type="button" class="custom-days-trigger"><span class="cdt-value">Seleccionar días</span><span class="cdt-arrow">▾</span></button><div class="cdays-label" hidden></div></div><div><label>Primer cobro *</label><input name="first" type="date"></div></div><div class="live" id="lv" hidden></div>`;
+<div class="f2"><div class="wdw" hidden><label>Día de cobro * <span class="mt">(viernes por defecto)</span></label><select name="wd"><option value="">Selecciona</option>${["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"].map((n,i)=>`<option value="${i}">${n}</option>`).join("")}</select></div><div class="cdw" hidden><label>Días de cobro *</label><button type="button" class="custom-days-trigger"><span class="cdt-value">Seleccionar días</span><span class="cdt-arrow">▾</span></button><div class="cdays-state" hidden>${Array.from({length:31},(_,i)=>`<input type="checkbox" name="cd" value="${i+1}">`).join("")}</div><div class="cdays-label" hidden></div></div><div><label>Primer cobro *</label><input name="first" type="date"></div></div><div class="live" id="lv" hidden></div>`;
 function bindLoan(fm){
  let autoFirst="",manualFirst=false;
  const setFirst=()=>{
@@ -468,7 +468,7 @@ function readLoan(fm,required){
  }else if(t==="c"){if(fm.pct.value===""||!(num(fm.pct.value)>=0))items.push([fm.pct,"% obligatorio"]);if(fm.n.value===""||!Number.isInteger(Number(fm.n.value))||Number(fm.n.value)<1)items.push([fm.n,"Cuotas obligatorias"]);}
  if(fm.freq.value==="semanal"&&!fm.wd.value)items.push([fm.wd,"Selecciona el día"]);
  const customDays=[...fm.querySelectorAll('input[name="cd"]:checked')].map(x=>Number(x.value)).sort((a,b)=>a-b);
- if(fm.freq.value==="personalizado"&&!customDays.length)items.push([fm.querySelector('.daypicker'),"Selecciona al menos un día"]);
+ if(fm.freq.value==="personalizado"&&!customDays.length)items.push([fm.querySelector(".custom-days-trigger"),"Selecciona al menos un día"]);
  if(!finishValidation(fm,items))return false;
  const o={t,cap,freq:fm.freq.value,date:fm.date.value,wd:fm.wd.value===""?null:+fm.wd.value,customDays:fm.freq.value==="personalizado"?customDays:[],first:fm.first.value};
  if(t==="r")o.fee=r2(num(fm.fee.value));else{o.pct=r2(num(fm.pct.value));o.n=Number(fm.n.value)}
