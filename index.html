@@ -70,6 +70,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th{color:var(--mt);font
 .client-section-title{font-size:17px;font-weight:650;margin:16px 0 9px}
 .loan-card{background:rgba(9,17,31,.58);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:13px;margin-bottom:10px;box-shadow:0 6px 18px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.06);backdrop-filter:blur(16px) saturate(1.25);-webkit-backdrop-filter:blur(16px) saturate(1.25)}
 .movements-list{max-height:430px;overflow-y:auto;overflow-x:hidden;padding-right:4px;scrollbar-width:thin}.movements-list .it{padding-right:2px}.movements-list::-webkit-scrollbar{width:6px}.movements-list::-webkit-scrollbar-thumb{background:rgba(143,163,192,.35);border-radius:999px}
+.hbar{position:sticky;top:var(--hh,110px);z-index:15;background:rgba(0,0,0,.94);margin:0 -14px 8px;padding:8px 14px 10px;display:grid;gap:8px}.hbar .hr{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(0,1fr);gap:8px}.hbar .hr2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}.hbar input,.hbar select{font-size:14px;padding:10px}
 .grid.kpi{gap:8px;margin-bottom:12px;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.grid.kpi .card{padding:6px 12px;min-width:0;overflow:hidden}.grid.kpi .l{font-size:12px;line-height:1.25}.grid.kpi .v{font-size:16px;margin-top:0;line-height:1.25;white-space:nowrap}.alert .movements-list{max-height:288px}
 .loan-info{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:9px 16px;align-items:start;width:100%}
 .loan-title{font-size:16px;line-height:1.35;word-break:normal;overflow-wrap:anywhere}
@@ -243,7 +244,7 @@ window.dispatchEvent(new Event("fb-ready"));
 "use strict";
 const KEY="rutacobro_rd_v1",BKEY="rutacobro_rd_respaldo_previo";
 const FREQ={diario:1,semanal:7,quincenal:15,mensual:30,personalizado:0},FL={diario:"Diario",semanal:"Semanal",quincenal:"Quincenal",mensual:"Mensual",personalizado:"Personalizado"};
-let db=empty(),view="hoy",q="",per="todo",rp="y"+new Date().getFullYear(),rd1="",rd2="",hp="todo",hd1="",hd2="",hn=80,_hist=[],_ho=null;
+let db=empty(),view="hoy",q="",per="todo",rp="y"+new Date().getFullYear(),rd1="",rd2="",hp="todo",hd1="",hd2="",hq="",_hqt=null,hn=80,_hist=[],_ho=null;
 function empty(){return{clients:[],loans:[],payments:[],settings:{}}}
 function valid(d){return d&&typeof d==="object"&&["clients","loans","payments"].every(k=>Array.isArray(d[k]))}
 function load(){try{const d=JSON.parse(localStorage.getItem(KEY));return valid(d)?norm(d):empty()}catch(e){return empty()}}
@@ -347,6 +348,7 @@ function inPer(d){const t=today();if(per==="hoy")return d===t;if(per==="semana")
 /* ===== PANTALLAS ===== */
 const loanRow=l=>`<div class="it${status(l)==='Atrasado'?' late':''}" data-a="editLoan" data-id="${l.id}"><div class="grow"><div class="nm">${esc(cname(l.clientId))}</div><div class="mt">Debe ${money(balance(l))} · ${l.type==="c"?`Pagadas ${Math.min(l.k,l.n)} de ${l.n}`:"Rédito"} ${money(amountDue(l))}</div><div class="mt">${fdate(l.nextDate)} ${tagL(l)}</div></div><button class="btn s" data-a="cobrar" data-id="${l.id}">Cobrar</button></div>`;
 const emptyBox=(m)=>`<div class="empty">${m}<br><button class="btn" data-a="nuevoCliente">Agregar cliente</button></div>`;
+const nrm=x=>String(x||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
 function histRange(){const t=today();let f=null,h=null;
  if(hp==="hoy"){f=h=t}
  else if(hp==="semana"){const k=(new Date().getDay()+6)%7;f=addDays(t,-k);h=t}
@@ -369,8 +371,9 @@ function setupHist(){
  _ho.observe(sn)}
 function fitKpi(){document.querySelectorAll(".grid.kpi .v").forEach(v=>{v.style.fontSize="";let z=16;while(v.scrollWidth>v.clientWidth+1&&z>10){z-=.5;v.style.fontSize=z+"px"}})}
 function capAlert(){const l=document.querySelector(".alert .movements-list");if(!l)return;l.style.maxHeight="none";const k=[...l.children];if(k.length<=5)return;let h=0;for(let i=0;i<5;i++)h+=k[i].offsetHeight;l.style.maxHeight=h+"px"}
-function afterRender(){fitKpi();capAlert();if(view==="historial")setupHist();else if(_ho){_ho.disconnect();_ho=null}}
-window.addEventListener("resize",()=>{if(view==="hoy")fitKpi()});
+function setHH(){const h=document.querySelector("header");if(h)document.documentElement.style.setProperty("--hh",h.offsetHeight+"px")}
+function afterRender(){setHH();fitKpi();capAlert();if(view==="historial")setupHist();else if(_ho){_ho.disconnect();_ho=null}}
+window.addEventListener("resize",()=>{setHH();if(view==="hoy")fitKpi()});
 const VIEWS={
 hoy(){
  const t=today(),act=active().sort(byDate),d=act.filter(l=>l.nextDate<=t),f=act.filter(l=>l.nextDate>t);
@@ -393,11 +396,12 @@ clientes(){
 historial(){
  const t=today(),cy=String(new Date().getFullYear()),yrs=new Set([cy]);
  db.payments.forEach(p=>{if(p.date)yrs.add(p.date.slice(0,4))});db.loans.forEach(l=>{if(l.startDate)yrs.add(l.startDate.slice(0,4))});
- const ys=[...yrs].sort().reverse(),{f,h}=histRange(),o=(v,l)=>`<option value="${v}" ${hp===v?"selected":""}>${l}</option>`;
- const ps=db.payments.map((p,i)=>({p,i})).filter(x=>!f||(!!x.p.date&&x.p.date>=f&&x.p.date<=h)).sort((a,b)=>{const d=b.p.date.localeCompare(a.p.date);return d||b.i-a.i}).map(x=>x.p);
+ const ys=[...yrs].sort().reverse(),{f,h}=histRange(),hqn=nrm(hq),o=(v,l)=>`<option value="${v}" ${hp===v?"selected":""}>${l}</option>`;
+ const ps=db.payments.map((p,i)=>({p,i})).filter(x=>(!f||(!!x.p.date&&x.p.date>=f&&x.p.date<=h))&&(!hqn||nrm(cname(x.p.clientId)).includes(hqn))).sort((a,b)=>{const d=b.p.date.localeCompare(a.p.date);return d||b.i-a.i}).map(x=>x.p);
  _hist=ps;const lim=window.IntersectionObserver?hn:ps.length,shown=ps.slice(0,lim);
  return`<h1>Historial</h1>
- <div class="card"><select id="hp" style="margin-bottom:8px">${o("hoy","Hoy")}${o("semana","Esta semana")}${o("mes","Este mes")}${ys.map(y=>o("y"+y,"Año "+y)).join("")}${o("todo","Todo el tiempo")}${o("rango","Elegir fechas…")}</select>${hp==="rango"?`<div class="grid" style="margin-bottom:8px"><div><label>Desde</label><input id="hd1" type="date" value="${hd1}"></div><div><label>Hasta</label><input id="hd2" type="date" value="${hd2}"></div></div>`:""}${ps.length?`<div class="mt" style="margin-bottom:4px">${ps.length} ${ps.length===1?"movimiento":"movimientos"} · ${money(sum(ps,p=>p.interest+p.capital))}</div><div id="hl">${shown.map(histRow).join("")}</div>${ps.length>shown.length?`<div id="hs" class="mt" style="text-align:center;padding:12px 0">Cargando historial…</div>`:""}`:`<div class="empty">Sin movimientos en este período.</div>`}</div>`;
+ <div class="hbar"><div class="hr"><input id="hq" placeholder="Buscar cliente" value="${esc(hq)}"><select id="hp">${o("hoy","Hoy")}${o("semana","Esta semana")}${o("mes","Este mes")}${ys.map(y=>o("y"+y,"Año "+y)).join("")}${o("todo","Todo el tiempo")}${o("rango","Elegir fechas…")}</select></div>${hp==="rango"?`<div class="hr2"><div><label>Desde</label><input id="hd1" type="date" value="${hd1}"></div><div><label>Hasta</label><input id="hd2" type="date" value="${hd2}"></div></div>`:""}</div>
+ <div class="card">${ps.length?`<div class="mt" style="margin-bottom:4px">${ps.length} ${ps.length===1?"movimiento":"movimientos"} · ${money(sum(ps,p=>p.interest+p.capital))}</div><div id="hl">${shown.map(histRow).join("")}</div>${ps.length>shown.length?`<div id="hs" class="mt" style="text-align:center;padding:12px 0">Cargando historial…</div>`:""}`:`<div class="empty">${hqn?"No hay movimientos de ese cliente en este período.":"Sin movimientos en este período."}</div>`}</div>`;
 },
 resumen(){
  const t=today(),cy=String(new Date().getFullYear()),yrs=new Set([cy]);
@@ -443,6 +447,7 @@ function render(){
  const d1=$("#rd1");if(d1)d1.onchange=e=>{rd1=e.target.value;render()};const d2=$("#rd2");if(d2)d2.onchange=e=>{rd2=e.target.value;render()};
  const hsel=$("#hp");if(hsel)hsel.onchange=e=>{hp=e.target.value;hn=80;render()};
  const hf1=$("#hd1");if(hf1)hf1.onchange=e=>{hd1=e.target.value;hn=80;render()};const hf2=$("#hd2");if(hf2)hf2.onchange=e=>{hd2=e.target.value;hn=80;render()};
+ const hqi=$("#hq");if(hqi)hqi.oninput=e=>{hq=e.target.value;hn=80;clearTimeout(_hqt);const pos=e.target.selectionStart;_hqt=setTimeout(()=>{render();const n=$("#hq");if(n){n.focus();n.setSelectionRange(pos,pos)}},200)};
  afterRender();
 }
 function go(v){view=v;if(v==="historial")hn=80;render();window.scrollTo(0,0)}
