@@ -20,13 +20,9 @@ nav button{flex:1;background:none;border:0;color:var(--mt);padding:9px 2px;borde
 nav button.on{background:var(--p2);color:var(--ce);box-shadow:inset 0 0 0 1px var(--bd)}
 main{padding:16px 14px 60px}
 h1{font-size:20px;margin-bottom:12px}h2{font-size:17px;margin-bottom:10px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
 .card{background:rgba(9,17,31,.68);border:1px solid rgba(255,255,255,.13);border-radius:18px;padding:14px;box-shadow:0 8px 24px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.08);backdrop-filter:blur(20px) saturate(1.35);-webkit-backdrop-filter:blur(20px) saturate(1.35);margin-bottom:12px}
 .grid .card{margin:0}
-/* Pantalla Hoy: tarjetas de cifras más compactas, conservando la paleta original */
-.grid .card{padding:10px 12px;border-radius:22px;min-height:0}
-.grid .l{font-size:13px;line-height:1.25}
-.grid .v{font-size:19px;line-height:1.25;margin-top:3px}
 .l{color:var(--mt);font-size:13px}.v{font-size:20px;font-weight:650;margin-top:2px;word-break:break-word}
 .it{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #15233b}.it:last-child{border:0}
 .grow{flex:1;min-width:0}.nm{font-weight:600;cursor:pointer}.mt{color:var(--mt);font-size:13px}
@@ -57,14 +53,8 @@ label{display:block;color:var(--mt);font-size:13px;margin-bottom:4px}
 .note{font-size:13px;color:var(--mt);border-left:3px solid var(--bl);padding-left:12px;margin-top:14px}
 .it[data-a]{cursor:pointer}
 .it.late{border-left:3px solid var(--er);padding-left:10px;background:rgba(236,122,122,.07)}
-.alert{background:rgba(236,122,122,.1);border:1px solid var(--er);border-radius:22px;padding:14px;margin-bottom:12px}
+.alert{background:rgba(236,122,122,.1);border:1px solid var(--er);border-radius:16px;padding:12px 14px;margin-bottom:12px}
 .alert b{color:var(--er)}.alert .it{border-color:rgba(236,122,122,.2);padding:8px 0;cursor:pointer}
-.alert-list{max-height:360px;overflow-y:auto;overflow-x:hidden;padding-right:4px;scrollbar-width:thin;overscroll-behavior:contain}
-.alert-list::-webkit-scrollbar,.dashboard-list::-webkit-scrollbar{width:6px}
-.alert-list::-webkit-scrollbar-thumb,.dashboard-list::-webkit-scrollbar-thumb{background:rgba(143,163,192,.35);border-radius:999px}
-.dashboard-list{max-height:360px;overflow-y:auto;overflow-x:hidden;padding-right:4px;scrollbar-width:thin;overscroll-behavior:contain}
-.history-list{max-height:65vh;overflow-y:auto;overflow-x:hidden;padding-right:4px;scrollbar-width:thin;overscroll-behavior:contain}
-.history-list::-webkit-scrollbar-thumb{background:rgba(143,163,192,.35);border-radius:999px}
 .bdg{background:var(--er);color:#000;border-radius:999px;font-size:11px;font-weight:700;padding:1px 6px;margin-left:4px}
 .hero{background:linear-gradient(135deg,#0f1a2e,#09111f);border-color:var(--ce)}.hero .v{font-size:28px;color:var(--ce)}
 table{width:100%;border-collapse:collapse;font-size:13px}th{color:var(--mt);font-weight:500;text-align:right;padding:6px 4px}td{text-align:right;padding:8px 4px;border-top:1px solid #15233b}th:first-child,td:first-child{text-align:left}
@@ -252,7 +242,7 @@ window.dispatchEvent(new Event("fb-ready"));
 "use strict";
 const KEY="rutacobro_rd_v1",BKEY="rutacobro_rd_respaldo_previo";
 const FREQ={diario:1,semanal:7,quincenal:15,mensual:30,personalizado:0},FL={diario:"Diario",semanal:"Semanal",quincenal:"Quincenal",mensual:"Mensual",personalizado:"Personalizado"};
-let db=empty(),view="hoy",q="",per="todo",rp="y"+new Date().getFullYear(),rd1="",rd2="";
+let db=empty(),view="hoy",q="",per="todo",rp="y"+new Date().getFullYear(),rd1="",rd2="",histLimit=80;
 function empty(){return{clients:[],loans:[],payments:[],settings:{}}}
 function valid(d){return d&&typeof d==="object"&&["clients","loans","payments"].every(k=>Array.isArray(d[k]))}
 function load(){try{const d=JSON.parse(localStorage.getItem(KEY));return valid(d)?norm(d):empty()}catch(e){return empty()}}
@@ -358,12 +348,12 @@ const loanRow=l=>`<div class="it${status(l)==='Atrasado'?' late':''}" data-a="ed
 const emptyBox=(m)=>`<div class="empty">${m}<br><button class="btn" data-a="nuevoCliente">Agregar cliente</button></div>`;
 const VIEWS={
 hoy(){
- const t=today(),act=active().sort(byDate),d=act.filter(l=>l.nextDate<=t),f=act.filter(l=>l.nextDate>t);
+ const t=today(),act=active().sort(byDate),d=act.filter(l=>l.nextDate<=t),f=act.filter(l=>l.nextDate>t).slice(0,5);
  const cob=sum(db.payments.filter(p=>p.date===t),p=>p.interest+p.capital);
- const late=act.filter(l=>l.nextDate<t),banner=late.length?`<div class="alert"><b>⚠ ${late.length} ${late.length===1?"cliente atrasado":"clientes atrasados"}</b><div class="mt" style="color:var(--er);margin:3px 0 8px">Vencido por cobrar: ${money(sum(late,amountDue))}</div><div class="alert-list">${late.map(l=>`<div class="it" data-a="editLoan" data-id="${l.id}"><div class="grow"><div class="nm">${esc(cname(l.clientId))}</div><div class="mt">Debía pagar el ${fdate(l.nextDate)}</div></div><div style="text-align:right"><b>${money(amountDue(l))}</b><div class="mt" style="color:var(--er)">${daysLate(l)} ${daysLate(l)===1?"día":"días"} tarde</div></div></div>`).join("")}</div></div>`:"";
- return`${banner}<div class="grid"><div class="card"><div class="l">Por cobrar hoy</div><div class="v" style="color:var(--wn)">${money(sum(d,amountDue))}</div></div><div class="card"><div class="l">Cobrado hoy</div><div class="v" style="color:var(--ok)">${money(cob)}</div></div><div class="card"><div class="l">Atrasados</div><div class="v" style="color:var(--er)">${late.length}</div></div><div class="card"><div class="l">Dinero en la calle</div><div class="v">${money(sum(act,capLeft))}</div></div></div>
- <div class="card"><h2>Cobros de hoy</h2>${d.length?`<div class="dashboard-list">${d.map(loanRow).join("")}</div>`:(act.length?`<div class="empty">No tienes cobros pendientes hoy.</div>`:emptyBox("Aún no tienes clientes."))}</div>
- ${f.length?`<div class="card"><h2>Próximos cobros</h2><div class="dashboard-list">${f.map(loanRow).join("")}</div></div>`:""}`;
+ const late=act.filter(l=>l.nextDate<t),banner=late.length?`<div class="alert"><b>⚠ ${late.length} ${late.length===1?"cliente atrasado":"clientes atrasados"}</b><div class="mt" style="color:var(--er)">Vencido por cobrar: ${money(sum(late,amountDue))}</div>${late.map(l=>`<div class="it" data-a="editLoan" data-id="${l.id}"><div class="grow"><div class="nm">${esc(cname(l.clientId))}</div><div class="mt">Debía pagar el ${fdate(l.nextDate)}</div></div><div style="text-align:right"><b>${money(amountDue(l))}</b><div class="mt" style="color:var(--er)">${daysLate(l)} ${daysLate(l)===1?"día":"días"} tarde</div></div></div>`).join("")}</div>`:"";
+ return`${banner}<div class="grid"><div class="card"><div class="l">Por cobrar hoy</div><div class="v" style="color:var(--wn)">${money(sum(d,amountDue))}</div></div><div class="card"><div class="l">Cobrado hoy</div><div class="v" style="color:var(--ok)">${money(cob)}</div></div><div class="card"><div class="l">Atrasados</div><div class="v" style="color:var(--er)">${act.filter(l=>l.nextDate<t).length}</div></div><div class="card"><div class="l">Dinero en la calle</div><div class="v">${money(sum(act,capLeft))}</div></div></div>
+ <div class="card"><h2>Cobros de hoy</h2>${d.length?d.map(loanRow).join(""):(act.length?`<div class="empty">No tienes cobros pendientes hoy.</div>`:emptyBox("Aún no tienes clientes."))}</div>
+ ${f.length?`<div class="card"><h2>Próximos cobros</h2>${f.map(loanRow).join("")}</div>`:""}`;
 },
 clientes(){
  const s=q.toLowerCase(),list=db.clients.filter(c=>c.name.toLowerCase().includes(s)||(c.phone||"").includes(s));
@@ -378,7 +368,7 @@ clientes(){
 historial(){
  const t=today(),ps=db.payments.map((p,i)=>({p,i})).filter(x=>inPer(x.p.date)).sort((a,b)=>{const d=b.p.date.localeCompare(a.p.date);return d||b.i-a.i}).map(x=>x.p),o=(v,l)=>`<option value="${v}" ${per===v?"selected":""}>${l}</option>`;
  return`<h1>Historial</h1>
- <div class="card"><select id="per" style="margin-bottom:8px">${o("hoy","Hoy")}${o("semana","Esta semana")}${o("mes","Este mes")}${o("todo","Todo el tiempo")}</select>${ps.length?`<div class="mt" style="margin-bottom:4px">${ps.length} ${ps.length===1?"movimiento":"movimientos"} · ${money(sum(ps,p=>p.interest+p.capital))}</div>`:""}${ps.length?`<div class="history-list">${ps.map(p=>`<div class="it"><div class="grow"><div class="nm" style="cursor:default">${esc(cname(p.clientId))}</div><div class="mt">${fdate(p.date)} · ${concept(p)}${p.renewal?" · Nuevo préstamo "+money(p.renewalAmount||0)+" · Entregado "+money(p.investment||0):p.note?" · "+esc(p.note):""}</div></div><div style="text-align:right"><b>${money(p.interest+p.capital)}</b><div class="mt">Capital ${money(p.capital)}</div><div class="mt" style="color:var(--ok)">Ganancia ${money(p.interest)}</div></div></div>`).join("")}</div>`:`<div class="empty">Sin movimientos en este período.</div>`}</div>`;
+ <div class="card"><select id="per" style="margin-bottom:8px">${o("hoy","Hoy")}${o("semana","Esta semana")}${o("mes","Este mes")}${o("todo","Todo el tiempo")}</select>${ps.length?`<div class="mt" style="margin-bottom:4px">${ps.length} ${ps.length===1?"movimiento":"movimientos"} · ${money(sum(ps,p=>p.interest+p.capital))}</div>`:""}${ps.length?`${ps.slice(0,histLimit).map(p=>`<div class="it"><div class="grow"><div class="nm" style="cursor:default">${esc(cname(p.clientId))}</div><div class="mt">${fdate(p.date)} · ${concept(p)}${p.renewal?" · Nuevo préstamo "+money(p.renewalAmount||0)+" · Entregado "+money(p.investment||0):p.note?" · "+esc(p.note):""}</div></div><div style="text-align:right"><b>${money(p.interest+p.capital)}</b><div class="mt">Capital ${money(p.capital)}</div><div class="mt" style="color:var(--ok)">Ganancia ${money(p.interest)}</div></div></div>`).join("")}`}${ps.length>histLimit?`<div style="margin-top:14px;text-align:center"><button class="btn g" data-a="verMasHistorial">Ver más</button></div>`:""}`:`<div class="empty">Sin movimientos en este período.</div>`}</div>`;
 },
 resumen(){
  const t=today(),cy=String(new Date().getFullYear()),yrs=new Set([cy]);
@@ -417,7 +407,7 @@ function render(){
  $("#nav").innerHTML=NAV.map(([k,l])=>`<button data-a="go" data-id="${k}" class="${view===k?"on":""}">${l}${k==="hoy"&&nl?`<span class="bdg">${nl}</span>`:""}</button>`).join("");
  document.body.classList.toggle("ro",locked());$("#app").innerHTML=banner()+announcement()+VIEWS[view]();
  const i=$("#q");if(i)i.oninput=e=>{q=e.target.value;const p=e.target.selectionStart;render();const n=$("#q");n.focus();n.setSelectionRange(p,p)};
- const p=$("#per");if(p)p.onchange=e=>{per=e.target.value;render()};
+ const p=$("#per");if(p)p.onchange=e=>{per=e.target.value;histLimit=80;render()};
  const rs=$("#rp");if(rs)rs.onchange=e=>{rp=e.target.value;render()};
  const d1=$("#rd1");if(d1)d1.onchange=e=>{rd1=e.target.value;render()};const d2=$("#rd2");if(d2)d2.onchange=e=>{rd2=e.target.value;render()};
 }
@@ -737,7 +727,7 @@ async function supportFlow(){openModal('<p class="mt">Cargando…</p>');let ms=[
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&window.FB&&FB.user&&FB.me)FB.refresh().then(()=>FB.getConfig()).then(c=>{_cfg=c;render()}).catch(()=>{})});
 
 /* ===== EVENTOS ===== */
-const A={cerrarActualizacion:async()=>{const a=_cfg&&_cfg.announcement;if(!a||!a.id)return;try{await FB.dismissAnnouncement(String(a.id));render()}catch(e){toast("No se pudo cerrar la actualización")}},eliminarPrestamo,renovar,plan:planFlow,soporte:supportFlow,salir:()=>confirmBox("¿Cerrar sesión en este dispositivo?",()=>{closeModal();FB.signOut()},"Cerrar sesión"),eliminarCliente,recibo:i=>receiptModal(db.payments.find(p=>p.id===i)),go,nuevoCliente:()=>clientForm(),editCliente:i=>clientForm(i),prestar,editLoan,cobrar,ver,exportar,importar:()=>$("#file").click(),
+const A={verMasHistorial:()=>{histLimit+=80;render()},cerrarActualizacion:async()=>{const a=_cfg&&_cfg.announcement;if(!a||!a.id)return;try{await FB.dismissAnnouncement(String(a.id));render()}catch(e){toast("No se pudo cerrar la actualización")}},eliminarPrestamo,renovar,plan:planFlow,soporte:supportFlow,salir:()=>confirmBox("¿Cerrar sesión en este dispositivo?",()=>{closeModal();FB.signOut()},"Cerrar sesión"),eliminarCliente,recibo:i=>receiptModal(db.payments.find(p=>p.id===i)),go,nuevoCliente:()=>clientForm(),editCliente:i=>clientForm(i),prestar,editLoan,cobrar,ver,exportar,importar:()=>$("#file").click(),
  demo:()=>confirmBox("Se agregarán 3 clientes de prueba. ¿Continuar?",demo,"Cargar"),
  borrar:()=>confirmBox("Se borrarán todos los clientes, préstamos y pagos. No se puede deshacer. ¿Descargaste un respaldo?",()=>{try{localStorage.removeItem(KEY)}catch(e){}db=empty();render();toast("Datos borrados")},"Sí, borrar todo")};
 A.vmenu=id=>{const m=document.getElementById(id);if(!m)return;const h=m.hidden;document.querySelectorAll(".vmenu").forEach(x=>x.hidden=true);m.hidden=!h};
